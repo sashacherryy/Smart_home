@@ -18,7 +18,7 @@ import com.example.diplomproject.adapter.BtConsts;
 
 
 public class MainActivity extends AppCompatActivity {
-    private final int REQUEST_ENABLE =1;
+
     Button connectBlueButton;
     BluetoothAdapter btAdapter;
     Intent btEnablingIntent;
