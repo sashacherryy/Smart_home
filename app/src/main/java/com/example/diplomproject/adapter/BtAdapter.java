@@ -58,7 +58,7 @@ public class BtAdapter  extends ArrayAdapter<ListItem> {
                     holder.chBTSelected.setChecked(false);
 
                 }
-                viewHolder.chBTSelected.setChecked(true);
+                viewHolder.chBTSelected.setChecked(true );
                 savePref(position);
 
             }
@@ -71,7 +71,7 @@ public class BtAdapter  extends ArrayAdapter<ListItem> {
     private void savePref(int pos){
 
         SharedPreferences.Editor editor = pref.edit();
-        editor.putString(BtConsts.MAC_KEY, mainList.get(pos).getBtName());
+        editor.putString(BtConsts.MAC_KEY, mainList.get(pos).getBtMac());
         editor.apply();
 
     }

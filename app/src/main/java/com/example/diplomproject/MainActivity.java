@@ -18,7 +18,7 @@ import com.example.diplomproject.adapter.BtConsts;
 
 
 public class MainActivity extends AppCompatActivity {
-
+    private final int REQUEST_ENABLE =1;
     Button connectBlueButton;
     BluetoothAdapter btAdapter;
     Intent btEnablingIntent;
@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         connectBlueButton = (Button) findViewById(R.id.connectBlueButton);
-
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
         btEnablingIntent= new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         requestCodeForEnable=1;
 
@@ -40,9 +40,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init() {
-        btAdapter = BluetoothAdapter.getDefaultAdapter();
+
         pref = getSharedPreferences(BtConsts.MY_PREF, Context.MODE_PRIVATE);
-        Log.d("MyLog", "BT NAME : " + pref.getString(BtConsts.MAC_KEY, "no bt selected"));
 
     }
 
@@ -59,8 +58,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
-
 
     private void checkBlue(){
         connectBlueButton.setOnClickListener(new View.OnClickListener() {
@@ -80,8 +77,4 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
-
-
-
-
 }
