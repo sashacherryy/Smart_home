@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/backgrouds"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:textAlignment="center"
+    tools:context=".MainActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <Button
+            android:id="@+id/confirmButton"
+            android:layout_width="93dp"
+            android:layout_height="wrap_content"
+            android:text="ОК"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toEndOf="@+id/timeout"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.781" />
+
+        <TextView
+            android:id="@+id/connectedDevices"
+            android:layout_width="159dp"
+            android:layout_height="25dp"
+            android:text="Пристрій підключенно:"
+            android:textAlignment="viewStart"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.178"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.236" />
+
+        <EditText
+            android:id="@+id/timeout"
+            android:layout_width="218dp"
+            android:layout_height="52dp"
+            android:ems="10"
+            android:inputType="number"
+            android:textAlignment="center"
+            android:textColor="#818181"
+            android:textSize="24sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.259"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.786" />
+
+        <ToggleButton
+            android:id="@+id/DIODE_ON"
+            android:layout_width="315dp"
+            android:layout_height="wrap_content"
+            android:text="Світло"
+            android:textOff="Світло OFF"
+            android:textOn="Світло ON"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.489"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.565" />
+
+        <ToggleButton
+            android:id="@+id/HEATER_ON"
+            android:layout_width="316dp"
+            android:layout_height="53dp"
+            android:text="Нагрівач"
+            android:textOff="Нагрівач OFF"
+            android:textOn="Нагрівач ON"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.473"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.451" />
+
+        <ToggleButton
+            android:id="@+id/FAN_ON"
+            android:layout_width="316dp"
+            android:layout_height="53dp"
+            android:text="Вентилятор"
+            android:textOff="Вентилятор OFF"
+            android:textOn="Вентилятор ON"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.473"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.336" />
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="204dp"
+            android:layout_height="49dp"
+            android:text="Вишневський Олександр 421КСМ-11"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.077"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.983" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="157dp"
+            android:layout_height="wrap_content"
+            android:text="КЕМТ"
+            android:textSize="34sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.625"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.052" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="59dp"
+            android:text=""
+            android:textSize="20sp"
+            android:verticalScrollbarPosition="defaultPosition"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.498"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.888" />
+
+        <Button
+            android:id="@+id/VOICE_RECOGNIZER"
+            android:layout_width="315dp"
+            android:layout_height="wrap_content"
+            android:background="#C53838"
+            android:text="Голосові команди"
+            android:textColor="#FFFFFF"
+            android:textColorHighlight="#BD3939"
+            android:textColorLink="#DC4747"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.479"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.68" />
+
+        <Button
+            android:id="@+id/connectBlueButton"
+            android:layout_width="317dp"
+            android:layout_height="wrap_content"
+            android:text="Підключення по блютузу"
+            android:textColorHighlight="#654B4B"
+            android:textColorLink="#5E4848"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.489"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.137" />
+
+        <TextView
+            android:id="@+id/bluetoothName"
+            android:layout_width="156dp"
+            android:layout_height="26dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.8"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.235" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</RelativeLayout>
