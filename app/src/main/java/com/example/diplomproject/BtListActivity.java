@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -25,7 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 public class BtListActivity extends AppCompatActivity {
-
+    private ArrayList<String> xmlDataList;
     private ListView listView;
     private BtAdapter adapter;
     private BluetoothAdapter btAdapter;
@@ -37,6 +38,7 @@ public class BtListActivity extends AppCompatActivity {
 
     private Button searchButton;
     private ListView deviceListView;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -65,10 +67,10 @@ public class BtListActivity extends AppCompatActivity {
         listView = findViewById(R.id.deviceListView);
         adapter = new BtAdapter(this, R.layout.bt_list_item, list);
         listView.setAdapter(adapter);
+        search();
         getPairedDevices();
 
     }
-
     private void checkHome() {
         btHome = findViewById(R.id.btHome);
         btHome.setOnClickListener(new View.OnClickListener() {
@@ -83,21 +85,34 @@ public class BtListActivity extends AppCompatActivity {
 
     private void getPairedDevices() {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
-            // Перевірка дозволів Bluetooth
             return;
         }
 
-        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices(); // Використовуємо btAdapter
+        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
         if (pairedDevices.size() > 0) {
             list.clear();
             for (BluetoothDevice device : pairedDevices) {
                 ListItem item = new ListItem();
                 item.setBtName(device.getName());
-                item.setBtMac(device.getAddress()); // MAC address
+                item.setBtMac(device.getAddress());
                 list.add(item);
             }
-            adapter.notifyDataSetChanged(); // Оновлення списку після додавання нових елементів
+            adapter.notifyDataSetChanged();
         }
+    }
+
+    private void search(){
+        Button searchButton = findViewById(R.id.searchButton);
+
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listView.getHeaderViewsCount() == 0) {
+                    View itemView = LayoutInflater.from(BtListActivity.this).inflate(R.layout.bt_list_item_title, null);
+                    listView.addHeaderView(itemView);
+                }
+            }
+        });
     }
 
 

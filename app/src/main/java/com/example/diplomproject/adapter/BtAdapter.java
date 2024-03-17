@@ -50,20 +50,24 @@ public class BtAdapter  extends ArrayAdapter<ListItem> {
         }
 
         viewHolder.tvBtName.setText(mainList.get(position).getBtName());
+
+        // Проверяем, выбран ли текущий элемент, и устанавливаем состояние CheckBox
+        if (pref.getString(BtConsts.MAC_KEY, "no bt selected").equals(mainList.get(position).getBtMac())) {
+            viewHolder.chBTSelected.setChecked(true);
+        } else {
+            viewHolder.chBTSelected.setChecked(false);
+        }
+
         viewHolder.chBTSelected.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                for(ViewHolder holder: listViewHolders){
-                    holder.chBTSelected.setChecked(false);
-
-                }
-                viewHolder.chBTSelected.setChecked(true );
                 savePref(position);
 
+                for (ViewHolder holder : listViewHolders) {
+                    holder.chBTSelected.setChecked(holder == viewHolder);
+                }
             }
         });
-        if(pref.getString(BtConsts.MAC_KEY, "no bt selected").equals(mainList.get(position).getBtMac()))viewHolder.chBTSelected.setChecked(true);
 
         return convertView;
     }
@@ -82,6 +86,8 @@ public class BtAdapter  extends ArrayAdapter<ListItem> {
         CheckBox chBTSelected;
 
     }
+
+
 
 
 }
