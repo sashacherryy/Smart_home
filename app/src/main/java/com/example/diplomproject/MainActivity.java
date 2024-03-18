@@ -90,15 +90,15 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-        if (requestCode == REQUEST_CODE_SPEECH_INPUT) {
 
-            if (resultCode == RESULT_OK && data != null) {
-                ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+        if (requestCode == REQUEST_CODE_SPEECH_INPUT && resultCode == RESULT_OK && data != null) {
+            ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+            if (result != null && !result.isEmpty()) {
                 String recognizedText = result.get(0);
                 TextView textView = findViewById(R.id.textView);
                 textView.setText(recognizedText);
+                handleVoiceCommand(recognizedText);
                 clearTextViewWithAnimation();
-
             }
         }
     }
@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "uk-UA"); // Встановлення мови розпізнавання (українська)
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Говоріть щось..."); // Повідомлення для користувача
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, ""); // Повідомлення для користувача
         try {
             startActivityForResult(intent, REQUEST_CODE_SPEECH_INPUT);
         } catch (ActivityNotFoundException a) {
@@ -294,5 +294,31 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 5000);
     }
+
+    private void handleVoiceCommand(String command) {
+        ToggleButton diodeToggleButton = findViewById(R.id.DIODE_ON);
+        ToggleButton fanToggleButton = findViewById(R.id.FAN_ON);
+        ToggleButton heaterToggleButton = findViewById(R.id.HEATER_ON);
+
+        String lowerCaseCommand = command.toLowerCase();
+
+        if (lowerCaseCommand.equals("увімкни світло")) {
+            diodeToggleButton.setChecked(true);
+        } else if (lowerCaseCommand.equals("вимкни світло")) {
+            diodeToggleButton.setChecked(false);
+        } else if (lowerCaseCommand.equals("увімкни вентилятор")) {
+            fanToggleButton.setChecked(true);
+        } else if (lowerCaseCommand.equals("вимкни вентилятор")) {
+            fanToggleButton.setChecked(false);
+        } else if (lowerCaseCommand.equals("увімкни нагрівач")) {
+            heaterToggleButton.setChecked(true);
+        } else if (lowerCaseCommand.equals("вимкни нагрівач")) {
+            heaterToggleButton.setChecked(false);
+        } else {
+
+        }
+
+    }
+
 
 }
