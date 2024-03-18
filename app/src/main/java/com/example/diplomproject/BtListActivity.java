@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,6 +28,7 @@ import androidx.core.content.ContextCompat;
 
 import com.example.diplomproject.adapter.BtAdapter;
 import com.example.diplomproject.adapter.ListItem;
+import com.example.diplomproject.bluetooth.BtConnection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,9 +45,9 @@ public class BtListActivity extends AppCompatActivity {
     private ArrayAdapter<String> deviceArrayAdapter;
     private ArrayList<BluetoothDevice> deviceList;
     private Button btHome;
-
     private Button searchButton;
     private ListView deviceListView;
+    private BtConnection btConnection;
     private boolean isBtPermissionGranted = false;
 
 
@@ -53,9 +55,11 @@ public class BtListActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.bluetooth_activity);
+        btConnection = new BtConnection(this);
         init();
         getBtPermission();
         checkHome();
+        con();
 
     }
 
@@ -89,6 +93,7 @@ public class BtListActivity extends AppCompatActivity {
                 ListItem item = (ListItem) parent.getItemAtPosition(position);
                 if (item.getItemType().equals(BtAdapter.DISCOVERY_ITEM_TYPE)) {
                     item.getBtDevice().createBond();
+
                 } else {
                     // Если нажатие произошло на bt_list_item_title, не выполняем никаких действий
                 }
@@ -137,6 +142,19 @@ public class BtListActivity extends AppCompatActivity {
                 }
 
                 btAdapter.startDiscovery();
+
+            }
+        });
+    }
+
+    private void con() {
+        Button btCon = findViewById(R.id.btCon);
+
+        btCon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                btConnection.connect();
 
             }
         });
@@ -212,6 +230,7 @@ public class BtListActivity extends AppCompatActivity {
                     }
                     // Если устройство не существует в списке, добавляем его
                     if (!isDeviceExist) {
+                        Log.d("MyLog", "MacAdress maybe of bluetooth: " + device.getAddress());
                         ListItem item = new ListItem();
                         item.setBtDevice(device);
                         item.setItemType(BtAdapter.DISCOVERY_ITEM_TYPE);

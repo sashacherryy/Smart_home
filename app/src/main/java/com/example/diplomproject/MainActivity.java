@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.diplomproject.adapter.BtConsts;
+import com.example.diplomproject.bluetooth.BtConnection;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -23,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     BluetoothAdapter btAdapter;
     Intent btEnablingIntent;
     int requestCodeForEnable;
+    private BtConnection btConnection;
     private SharedPreferences pref;
 
     @Override
