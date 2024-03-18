@@ -156,6 +156,7 @@ public class BtListActivity extends AppCompatActivity {
 
                 btConnection.connect();
 
+
             }
         });
     }
@@ -220,7 +221,6 @@ public class BtListActivity extends AppCompatActivity {
             if (BluetoothDevice.ACTION_FOUND.equals(intent.getAction())) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 if (device.getName() != null && !device.getName().isEmpty()) {
-                    // Проверяем, не содержит ли уже список устройств с данным MAC-адресом
                     boolean isDeviceExist = false;
                     for (ListItem listItem : list) {
                         if (listItem.getBtDevice().getAddress().equals(device.getAddress())) {

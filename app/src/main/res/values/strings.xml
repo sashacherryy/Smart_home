@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">diplomProject</string>
+    <string name="app_name">SmartHome</string>
+    <string name="heater_on">Heater ON</string>
+    <string name="heater_off">Heater OFF</string>
+    <string name="diode_on">Diode ON</string>
+    <string name="diode_off">Diode OFF</string>
+    <string name="fan_on">Fan ON</string>
+    <string name="fan_off">Fan OFF</string>
 </resources>

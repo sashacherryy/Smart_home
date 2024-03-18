@@ -42,8 +42,8 @@
 
         <EditText
             android:id="@+id/timeout"
-            android:layout_width="218dp"
-            android:layout_height="52dp"
+            android:layout_width="150dp"
+            android:layout_height="54dp"
             android:ems="10"
             android:inputType="number"
             android:textAlignment="center"
@@ -51,10 +51,10 @@
             android:textSize="24sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.259"
+            app:layout_constraintHorizontal_bias="0.444"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.786" />
+            app:layout_constraintVertical_bias="0.788" />
 
         <ToggleButton
             android:id="@+id/DIODE_ON"
@@ -137,6 +137,21 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.888" />
+
+        <TextView
+            android:id="@+id/timeLess"
+            android:layout_width="wrap_content"
+            android:layout_height="59dp"
+            android:text=""
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:verticalScrollbarPosition="defaultPosition"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.114"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.812" />
 
         <Button
             android:id="@+id/VOICE_RECOGNIZER"
