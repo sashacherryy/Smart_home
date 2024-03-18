@@ -77,14 +77,14 @@ public class MainActivity extends AppCompatActivity {
 
             if (resultCode == RESULT_OK) {
 
-                Toast.makeText(getApplicationContext(), "Bluetooth is Enable", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Bluetooth увімкнений", Toast.LENGTH_LONG).show();
                 updateBluetoothNameTextView();
                 Intent i = new Intent(MainActivity.this, BtListActivity.class);
                 startActivity(i);
 
             } else if (resultCode == RESULT_CANCELED) {
 
-                Toast.makeText(getApplicationContext(), "Bluetooth enabling cancelled", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Bluetooth відмінений", Toast.LENGTH_LONG).show();
 
             }
 
@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(btAdapter == null){
-                    Toast.makeText(getApplicationContext(),"Bluetooth doesn't support on this device",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(),"Данний пристрій не підтримує Bluetooth",Toast.LENGTH_LONG).show();
                 }else{
                     if(!btAdapter.isEnabled()){
                         startActivityForResult(btEnablingIntent,requestCodeForEnable);
