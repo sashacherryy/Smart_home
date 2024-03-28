@@ -33,6 +33,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
     private final int REQUEST_ENABLE =1;
     Button connectBlueButton;
+    private String deviceName;
     BluetoothAdapter btAdapter;
     Intent btEnablingIntent;
     int requestCodeForEnable;
@@ -54,6 +55,9 @@ public class MainActivity extends AppCompatActivity {
         btEnablingIntent= new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         requestCodeForEnable=1;
 
+        Intent intent = getIntent();
+        deviceName = intent.getStringExtra(BtConsts.NAME_KEY);
+
         timeoutEditText = findViewById(R.id.timeout);
         confirmButton = findViewById(R.id.confirmButton);
 
@@ -68,6 +72,18 @@ public class MainActivity extends AppCompatActivity {
         buttonClick();
 
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        TextView bluetoothNameTextView = findViewById(R.id.bluetoothsurName);
+        if (bluetoothNameTextView != null && deviceName != null) {
+            bluetoothNameTextView.setText(deviceName);
+        } else {
+
+        }
+    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -104,11 +120,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateBluetoothNameTextView() {
-
         String bluetoothName = pref.getString(BtConsts.NAME_KEY, "");
-        TextView bluetoothNameTextView = findViewById(R.id.bluetoothName);
-        bluetoothNameTextView.setText(bluetoothName);
-
+        TextView bluetoothNameTextView = findViewById(R.id.bluetoothsurName);
+        if (bluetoothNameTextView != null) {
+            bluetoothNameTextView.setText(bluetoothName);
+        } else {
+            Log.e("MainActivity", "TextView with id 'bluetoothsurName' not found");
+        }
     }
 
     private void checkBlue(){
@@ -133,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "uk-UA"); // Встановлення мови розпізнавання (українська)
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, ""); // Повідомлення для користувача
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Говоріть щось..."); // Повідомлення для користувача
         try {
             startActivityForResult(intent, REQUEST_CODE_SPEECH_INPUT);
         } catch (ActivityNotFoundException a) {

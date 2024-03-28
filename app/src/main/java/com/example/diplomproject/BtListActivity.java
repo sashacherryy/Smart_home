@@ -1,6 +1,7 @@
 package com.example.diplomproject;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -17,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -29,6 +31,7 @@ import androidx.core.content.ContextCompat;
 import com.example.diplomproject.adapter.BtAdapter;
 import com.example.diplomproject.adapter.ListItem;
 import com.example.diplomproject.bluetooth.BtConnection;
+import com.example.diplomproject.bluetooth.ConnectThread;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +39,7 @@ import java.util.Set;
 
 public class BtListActivity extends AppCompatActivity {
     private final int BT_REQUEST_PERM = 241;
+    private TextView textView;
     private ArrayList<String> xmlDataList;
     private ListView listView;
     private BtAdapter adapter;
@@ -55,12 +59,12 @@ public class BtListActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.bluetooth_activity);
-        btConnection = new BtConnection(this);
+        textView = findViewById(R.id.textView);
+        btConnection = new BtConnection(this, textView);
         init();
         getBtPermission();
         checkHome();
         con();
-
     }
 
     @Override
@@ -92,10 +96,11 @@ public class BtListActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 ListItem item = (ListItem) parent.getItemAtPosition(position);
                 if (item.getItemType().equals(BtAdapter.DISCOVERY_ITEM_TYPE)) {
-                    item.getBtDevice().createBond();
-
+                    BluetoothDevice device = item.getBtDevice();
+                    ConnectThread connectThread = new ConnectThread(BtListActivity.this, btAdapter, device, textView);
+                    connectThread.start();
                 } else {
-                    // Если нажатие произошло на bt_list_item_title, не выполняем никаких действий
+
                 }
             }
         });
