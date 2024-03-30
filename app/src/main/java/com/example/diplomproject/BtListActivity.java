@@ -59,12 +59,19 @@ public class BtListActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.bluetooth_activity);
+
+        // Ініціалізація текстового поля інші елементи, що ініціалізуються
         textView = findViewById(R.id.textView);
-        btConnection = new BtConnection(this, textView);
         init();
+        con();
         getBtPermission();
         checkHome();
-        con();
+
+
+        // Ініціалізація btConnection
+        btConnection = new BtConnection(this, textView);
+        Log.e("BtListActivity", "btConnection" + btConnection);
+
     }
 
     @Override
@@ -158,10 +165,12 @@ public class BtListActivity extends AppCompatActivity {
         btCon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 btConnection.connect();
-
-
+                if(btConnection != null){
+                    Log.d("btConnection", "Connectd" + btConnection);
+                }else {
+                    Log.d("btConnection", "NotConnectd" + btConnection);
+                }
             }
         });
     }

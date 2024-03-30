@@ -27,6 +27,7 @@ public class ConnectThread extends Thread {
     private BluetoothSocket mSocket;
     private BluetoothDevice mDevice;
     private TextView textView;
+    private ReceiveThread rThread;
     public static final String UUID = "00001101-0000-1000-8000-00805F9B34FB";
 
     @SuppressLint("MissingPermission")
@@ -55,9 +56,16 @@ public class ConnectThread extends Thread {
         Log.d("ConnectThread", "Attempting to connect to device: " + deviceName);
         Log.d("ConnectThread", "Attempting to connect to MAC: " + mDevice.getAddress());
         try {
+            if (btAdapter == null || mDevice == null || mSocket == null) {
+                Log.e("ConnectThread", "BluetoothAdapter, BluetoothDevice, or BluetoothSocket is null");
+                return;
+            }
             mSocket.connect();
-            new ReceiveThread(mSocket).start();
-            Log.d("MyLog", "Device connected");
+            rThread = new ReceiveThread(mSocket);
+            rThread.start();
+            Log.d("MyLog", "Device connected" + deviceName);
+
+
 
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
@@ -73,8 +81,6 @@ public class ConnectThread extends Thread {
                     TextView bluetoothNameTextView = ((Activity) context).findViewById(R.id.bluetoothsurName);
                     if (bluetoothNameTextView != null) {
                         bluetoothNameTextView.setText(deviceName);
-                    } else {
-                        Log.e("ConnectThread", "TextView with id 'bluetoothsurName' not found in activity_main.xml");
                     }
 
                     if (deviceName != null) {
@@ -88,7 +94,11 @@ public class ConnectThread extends Thread {
             Intent intent = new Intent(context, MainActivity.class);
             intent.putExtra(BtConsts.NAME_KEY, deviceName);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(intent);
+            try {
+                context.startActivity(intent);
+            } catch (Exception e) {
+                Log.e("BtConnection", "Failed to start MainActivity", e);
+            }
 
         } catch (IOException e) {
             try {
@@ -104,10 +114,27 @@ public class ConnectThread extends Thread {
     @SuppressLint("MissingPermission")
     public void closeConnection() {
         try {
-            mSocket.close();
-            Log.d("ConnectThread", "Closed connection to device: " + mDevice.getName());
+            if (mSocket != null) {
+                mSocket.close();
+                Log.d("ConnectThread", "Closed connection to device: " + mDevice.getName());
+            } else {
+                Log.e("ConnectThread", "BluetoothSocket is null");
+            }
         } catch (IOException e) {
             Log.e("ConnectThread", "Could not close the client socket", e);
         }
     }
+
+    public ReceiveThread getRThread() {
+        if(rThread != null){
+            Log.i("rThread_INF" , "rThread_inf" + rThread);
+            return rThread;
+        }else{
+            Log.e("rThread_INF" , "rThread_inf" + rThread);
+            return null;
+        }
+
+    }
+
+
 }

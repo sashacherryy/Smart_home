@@ -24,12 +24,18 @@ public class ReceiveThread extends Thread {
         } catch (IOException e) {
             Log.e("ReceiveThread", "Error occurred when creating input stream", e);
         }
+
+        try {
+            outputS = socket.getOutputStream();
+        } catch (IOException e) {
+            Log.e("ReceiveThread", "Error occurred when creating input stream", e);
+        }
     }
 
     @Override
     public void run() {
 
-        rBuffer = new byte[2];
+        rBuffer = new byte[1024];
         while (true){
             try{
                 int size = inputS.read(rBuffer);
@@ -39,7 +45,13 @@ public class ReceiveThread extends Thread {
                 break;
             }
         }
-
+    }
+    public void sendMessage(byte[] byteArray){
+        try{
+            outputS.write(byteArray);
+        }catch (IOException e){
+            Log.e("SendMessageCatch" ,"s", e);
+        }
     }
 }
 

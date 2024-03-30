@@ -26,7 +26,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.diplomproject.adapter.BtConsts;
 import com.example.diplomproject.bluetooth.BtConnection;
+import com.example.diplomproject.bluetooth.ConnectThread;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 
@@ -44,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private Handler handler = new Handler();
     private EditText timeoutEditText;
     private Button confirmButton;
+    private TextView textView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -55,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
         btEnablingIntent= new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         requestCodeForEnable=1;
 
+
         Intent intent = getIntent();
         deviceName = intent.getStringExtra(BtConsts.NAME_KEY);
 
@@ -64,6 +68,9 @@ public class MainActivity extends AppCompatActivity {
         checkBlue();
         init();
         confirmBut();
+
+        btConnection = new BtConnection(this, textView);
+        Log.e("BtListActivity", "btConnection" + btConnection);
     }
 
     private void init() {
@@ -182,25 +189,28 @@ public class MainActivity extends AppCompatActivity {
         confirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int minutes = Integer.parseInt(timeoutEditText.getText().toString());
+                String minutesStr = timeoutEditText.getText().toString();
+                if (!minutesStr.isEmpty()) {
+                    int minutes = Integer.parseInt(minutesStr);
 
-                if (minutes > 0) {
-                    handler.removeCallbacksAndMessages(null);
-                    startTimer(minutes);
-                    toggleOffRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            turnOffAllToggleButtons();
-                            Toast.makeText(MainActivity.this, "Всі сигнали вимкнені", Toast.LENGTH_SHORT).show();
-                        }
-                    };
-                    handler.postDelayed(toggleOffRunnable, minutes * 60 * 1000);
+                    if (minutes > 0) {
+                        handler.removeCallbacksAndMessages(null);
+                        startTimer(minutes);
+                        toggleOffRunnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                turnOffAllToggleButtons();
+                                Toast.makeText(MainActivity.this, "Всі сигнали вимкнені", Toast.LENGTH_SHORT).show();
+                            }
+                        };
+                        handler.postDelayed(toggleOffRunnable, minutes * 60 * 1000);
+                    } else {
+                        Toast.makeText(MainActivity.this, "Введіть додатнє число хвилин", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
-                    Toast.makeText(MainActivity.this, "Введіть додатнє число хвилин", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Поле введення порожнє", Toast.LENGTH_SHORT).show();
                 }
-
                 timeoutEditText.setText("");
-
             }
         });
     }
@@ -230,6 +240,9 @@ public class MainActivity extends AppCompatActivity {
                 int seconds = secondsLeft % 60;
                 String timeLeftFormatted = String.format("%02d:%02d", minutes, seconds);
                 timeLess.setText(timeLeftFormatted);
+
+                // Надсилання даних через Bluetooth
+                sendDataOverBluetooth(timeLeftFormatted);
 
                 if (secondsLeft > 0) {
                     secondsLeft--;
@@ -336,6 +349,14 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+    }
+
+    private void sendDataOverBluetooth(String data) {
+        if (btConnection != null) {
+            btConnection.sendMessage(data);
+        } else {
+            Log.e("MainActivity", "Bluetooth connection is null");
+        }
     }
 
 
