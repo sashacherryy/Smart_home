@@ -6,8 +6,11 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.diplomproject.adapter.BtConsts;
+
+import java.io.IOException;
 
 public class BtConnection {
 
@@ -38,11 +41,18 @@ public class BtConnection {
         if (device == null) return;
         connectThread = new ConnectThread(context, btAdapter, device, textView);
         connectThread.start();
+        Log.e("connectThread_data", "connectThread Data about it " + connectThread);
 
     }
 
-    public void sendMessage(String message){
-        connectThread.getRThread().sendMessage(message.getBytes());
+    public void sendData(String data) {
+        if (connectThread != null) {
+            connectThread.getRThread().sendMessage(data.getBytes());
+            Log.d("BluetoothApp", "Data sent: " + data);
+        } else {
+            Log.e("BluetoothApp", "Bluetooth connection is not established " + connectThread);
+        }
     }
+
 
 }

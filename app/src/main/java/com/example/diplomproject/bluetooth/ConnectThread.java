@@ -1,7 +1,6 @@
 package com.example.diplomproject.bluetooth;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -13,12 +12,13 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.diplomproject.MainActivity;
 import com.example.diplomproject.R;
 import com.example.diplomproject.adapter.BtConsts;
 
 import java.io.IOException;
-import java.util.UUID;
 
 public class ConnectThread extends Thread {
 
@@ -43,7 +43,6 @@ public class ConnectThread extends Thread {
         }
     }
 
-
     @SuppressLint("MissingPermission")
     @Override
     public void run() {
@@ -67,27 +66,24 @@ public class ConnectThread extends Thread {
 
 
 
-            new Handler(Looper.getMainLooper()).post(new Runnable() {
-                @Override
-                public void run() {
-                    if (textView != null) {
-                        if (deviceName != null) {
-                            textView.setText(deviceName);
-                        } else {
-                            Log.e("ConnectThread", "Device name is null");
-                        }
-                    }
-
-                    TextView bluetoothNameTextView = ((Activity) context).findViewById(R.id.bluetoothsurName);
-                    if (bluetoothNameTextView != null) {
-                        bluetoothNameTextView.setText(deviceName);
-                    }
-
+            new Handler(Looper.getMainLooper()).post(() -> {
+                if (textView != null) {
                     if (deviceName != null) {
-                        Toast.makeText(context, "Пристрій підключено: " + deviceName, Toast.LENGTH_SHORT).show();
+                        textView.setText(deviceName);
                     } else {
                         Log.e("ConnectThread", "Device name is null");
                     }
+                }
+
+                TextView bluetoothNameTextView = ((AppCompatActivity) context).findViewById(R.id.bluetoothsurName);
+                if (bluetoothNameTextView != null) {
+                    bluetoothNameTextView.setText(deviceName);
+                }
+
+                if (deviceName != null) {
+                    Toast.makeText(context, "Пристрій підключено: " + deviceName, Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.e("ConnectThread", "Device name is null");
                 }
             });
 
@@ -130,10 +126,17 @@ public class ConnectThread extends Thread {
             Log.i("rThread_INF" , "rThread_inf" + rThread);
             return rThread;
         }else{
-            Log.e("rThread_INF" , "rThread_inf" + rThread);
+            Log.e("rThread_INF-no" , "rThread_inf-no " + rThread);
             return null;
         }
+    }
 
+    public void cancel() {
+        try {
+            mSocket.close();
+        } catch (IOException e) {
+            Log.e("ConnectThread", "Error closing the socket", e);
+        }
     }
 
 

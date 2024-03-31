@@ -45,6 +45,7 @@ public class BtListActivity extends AppCompatActivity {
     private BtAdapter adapter;
     private BluetoothAdapter btAdapter;
     private List<ListItem> list;
+    private ConnectThread connectThread;
     private BluetoothAdapter bluetoothAdapter;
     private ArrayAdapter<String> deviceArrayAdapter;
     private ArrayList<BluetoothDevice> deviceList;
@@ -104,7 +105,7 @@ public class BtListActivity extends AppCompatActivity {
                 ListItem item = (ListItem) parent.getItemAtPosition(position);
                 if (item.getItemType().equals(BtAdapter.DISCOVERY_ITEM_TYPE)) {
                     BluetoothDevice device = item.getBtDevice();
-                    ConnectThread connectThread = new ConnectThread(BtListActivity.this, btAdapter, device, textView);
+                    connectThread = new ConnectThread(BtListActivity.this, btAdapter, device, textView);
                     connectThread.start();
                 } else {
 
@@ -112,6 +113,8 @@ public class BtListActivity extends AppCompatActivity {
             }
         });
     }
+
+
 
     private void checkHome() {
         btHome = findViewById(R.id.btHome);

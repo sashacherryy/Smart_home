@@ -1,7 +1,5 @@
 package com.example.diplomproject.bluetooth;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
@@ -11,14 +9,14 @@ import java.io.OutputStream;
 
 public class ReceiveThread extends Thread {
 
-    private BluetoothAdapter socket;
+    private BluetoothSocket socket;
     private InputStream inputS;
     private OutputStream outputS;
 
     private byte[] rBuffer;
 
     public ReceiveThread(BluetoothSocket socket) {
-        socket = socket;
+        this.socket = socket;
         try {
             inputS = socket.getInputStream();
         } catch (IOException e) {
@@ -34,7 +32,6 @@ public class ReceiveThread extends Thread {
 
     @Override
     public void run() {
-
         rBuffer = new byte[1024];
         while (true){
             try{
@@ -46,12 +43,13 @@ public class ReceiveThread extends Thread {
             }
         }
     }
+
     public void sendMessage(byte[] byteArray){
-        try{
+        try {
             outputS.write(byteArray);
-        }catch (IOException e){
-            Log.e("SendMessageCatch" ,"s", e);
+            Log.d("BluetoothApp", "Data sent: " + byteArray);
+        } catch (IOException e) {
+            Log.e("BluetoothApp", "Error sending data", e);
         }
     }
 }
-

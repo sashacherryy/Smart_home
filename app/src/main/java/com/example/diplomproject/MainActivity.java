@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         connectBlueButton = (Button) findViewById(R.id.connectBlueButton);
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         btEnablingIntent= new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        requestCodeForEnable=1;
+        requestCodeForEnable = 1 ;
 
 
         Intent intent = getIntent();
@@ -78,7 +78,17 @@ public class MainActivity extends AppCompatActivity {
         pref = getSharedPreferences(BtConsts.MY_PREF, Context.MODE_PRIVATE);
         buttonClick();
 
+        ToggleButton toggleButtonA = findViewById(R.id.FAN_ON);
+        toggleButtonA.setOnCheckedChangeListener((buttonView, isChecked) -> sendDataOverBluetooth(isChecked ? "A" : "D"));
+
+        ToggleButton toggleButtonB = findViewById(R.id.HEATER_ON);
+        toggleButtonB.setOnCheckedChangeListener((buttonView, isChecked) -> sendDataOverBluetooth(isChecked ? "B" : "D"));
+
+        ToggleButton toggleButtonC = findViewById(R.id.DIODE_ON);
+        toggleButtonC.setOnCheckedChangeListener((buttonView, isChecked) -> sendDataOverBluetooth(isChecked ? "C" : "D"));
+
     }
+
 
     @Override
     protected void onResume() {
@@ -353,7 +363,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendDataOverBluetooth(String data) {
         if (btConnection != null) {
-            btConnection.sendMessage(data);
+            btConnection.sendData(data);
         } else {
             Log.e("MainActivity", "Bluetooth connection is null");
         }
