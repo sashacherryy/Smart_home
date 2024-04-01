@@ -41,7 +41,7 @@ public class BtConnection {
         if (device == null) return;
         connectThread = new ConnectThread(context, btAdapter, device, textView);
         connectThread.start();
-        Log.e("connectThread_data", "connectThread Data about it " + connectThread);
+        Log.i("connectThread_data", "connectThread Data about it " + connectThread);
 
     }
 

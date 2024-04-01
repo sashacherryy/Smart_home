@@ -46,34 +46,14 @@ public class ConnectThread extends Thread {
     @SuppressLint("MissingPermission")
     @Override
     public void run() {
-        String deviceName = mDevice.getName();
-        if (deviceName == null) {
-            Log.e("ConnectThread", "Device name is null");
-            return;
-        }
-
-        Log.d("ConnectThread", "Attempting to connect to device: " + deviceName);
-        Log.d("ConnectThread", "Attempting to connect to MAC: " + mDevice.getAddress());
+        String deviceName;
+        deviceName = mDevice.getName();
+        btAdapter.cancelDiscovery();
         try {
-            if (btAdapter == null || mDevice == null || mSocket == null) {
-                Log.e("ConnectThread", "BluetoothAdapter, BluetoothDevice, or BluetoothSocket is null");
-                return;
-            }
             mSocket.connect();
             rThread = new ReceiveThread(mSocket);
             rThread.start();
-            Log.d("MyLog", "Device connected" + deviceName);
-
-
-
             new Handler(Looper.getMainLooper()).post(() -> {
-                if (textView != null) {
-                    if (deviceName != null) {
-                        textView.setText(deviceName);
-                    } else {
-                        Log.e("ConnectThread", "Device name is null");
-                    }
-                }
 
                 TextView bluetoothNameTextView = ((AppCompatActivity) context).findViewById(R.id.bluetoothsurName);
                 if (bluetoothNameTextView != null) {
@@ -82,28 +62,20 @@ public class ConnectThread extends Thread {
 
                 if (deviceName != null) {
                     Toast.makeText(context, "Пристрій підключено: " + deviceName, Toast.LENGTH_SHORT).show();
-                } else {
-                    Log.e("ConnectThread", "Device name is null");
                 }
             });
 
             Intent intent = new Intent(context, MainActivity.class);
             intent.putExtra(BtConsts.NAME_KEY, deviceName);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            try {
-                context.startActivity(intent);
-            } catch (Exception e) {
-                Log.e("BtConnection", "Failed to start MainActivity", e);
-            }
+            context.startActivity(intent);
 
         } catch (IOException e) {
             try {
                 mSocket.close();
-                Log.e("ConnectThread", "Could not close the client socket", e);
-                closeConnection();
-            } catch (IOException closeException) {
-                Log.e("ConnectThread", "Could not close the client socket", closeException);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
             }
+            closeConnection();
         }
     }
 
@@ -112,9 +84,6 @@ public class ConnectThread extends Thread {
         try {
             if (mSocket != null) {
                 mSocket.close();
-                Log.d("ConnectThread", "Closed connection to device: " + mDevice.getName());
-            } else {
-                Log.e("ConnectThread", "BluetoothSocket is null");
             }
         } catch (IOException e) {
             Log.e("ConnectThread", "Could not close the client socket", e);
@@ -122,22 +91,9 @@ public class ConnectThread extends Thread {
     }
 
     public ReceiveThread getRThread() {
-        if(rThread != null){
-            Log.i("rThread_INF" , "rThread_inf" + rThread);
-            return rThread;
-        }else{
-            Log.e("rThread_INF-no" , "rThread_inf-no " + rThread);
-            return null;
-        }
+        return rThread;
     }
 
-    public void cancel() {
-        try {
-            mSocket.close();
-        } catch (IOException e) {
-            Log.e("ConnectThread", "Error closing the socket", e);
-        }
-    }
 
 
 }

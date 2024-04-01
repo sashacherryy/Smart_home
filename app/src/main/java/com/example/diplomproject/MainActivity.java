@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        btConnection = new BtConnection(this, textView);
         connectBlueButton = (Button) findViewById(R.id.connectBlueButton);
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         btEnablingIntent= new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -68,8 +69,10 @@ public class MainActivity extends AppCompatActivity {
         checkBlue();
         init();
         confirmBut();
+        confirmButton.setOnClickListener(v -> {
+            if(btConnection != null ) btConnection.sendData("C");
+        });
 
-        btConnection = new BtConnection(this, textView);
         Log.e("BtListActivity", "btConnection" + btConnection);
     }
 
