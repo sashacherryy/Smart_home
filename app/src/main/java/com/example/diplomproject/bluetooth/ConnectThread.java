@@ -28,6 +28,8 @@ public class ConnectThread extends Thread {
     private BluetoothDevice mDevice;
     private TextView textView;
     private ReceiveThread rThread;
+    private boolean isConnected = false;
+
     public static final String UUID = "00001101-0000-1000-8000-00805F9B34FB";
 
     @SuppressLint("MissingPermission")
@@ -46,35 +48,31 @@ public class ConnectThread extends Thread {
     @SuppressLint("MissingPermission")
     @Override
     public void run() {
-        String deviceName;
-        deviceName = mDevice.getName();
+        String deviceName = mDevice.getName();
         btAdapter.cancelDiscovery();
         try {
             mSocket.connect();
             rThread = new ReceiveThread(mSocket);
             rThread.start();
+            isConnected = true;
+
             new Handler(Looper.getMainLooper()).post(() -> {
-
-                TextView bluetoothNameTextView = ((AppCompatActivity) context).findViewById(R.id.bluetoothsurName);
-                if (bluetoothNameTextView != null) {
-                    bluetoothNameTextView.setText(deviceName);
-                }
-
                 if (deviceName != null) {
                     Toast.makeText(context, "Пристрій підключено: " + deviceName, Toast.LENGTH_SHORT).show();
                 }
             });
 
-            Intent intent = new Intent(context, MainActivity.class);
-            intent.putExtra(BtConsts.NAME_KEY, deviceName);
-            context.startActivity(intent);
-
-        } catch (IOException e) {
-            try {
-                mSocket.close();
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
+            // Перевіряємо, чи вдалося підключитися перед переходом на головну сторінку
+            if (isConnected) {
+                Intent intent = new Intent(context, MainActivity.class);
+                intent.putExtra(BtConsts.NAME_KEY, deviceName);
+                intent.putExtra("isConnected", isConnected);
+                context.startActivity(intent);
             }
+        } catch (IOException e) {
+            isConnected = false;
+            Log.e("ConnectThread", "Connection failed", e);
+            Toast.makeText(context, "Connection failed", Toast.LENGTH_SHORT).show();
             closeConnection();
         }
     }
@@ -94,6 +92,10 @@ public class ConnectThread extends Thread {
         return rThread;
     }
 
-
-
+    public boolean isConnected() {
+        return isConnected;
+    }
 }
+
+
+

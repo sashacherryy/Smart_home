@@ -26,7 +26,7 @@ public class ReceiveThread extends Thread {
         try {
             outputS = socket.getOutputStream();
         } catch (IOException e) {
-            Log.e("ReceiveThread", "Error occurred when creating input stream", e);
+            Log.e("ReceiveThread", "Error occurred when creating output stream", e);
         }
     }
 
@@ -37,7 +37,7 @@ public class ReceiveThread extends Thread {
             try{
                 int size = inputS.read(rBuffer);
                 String message = new String(rBuffer, 0, size);
-                Log.d("MyLog", "Message: " + message);
+                Log.d("ReceiveThread", "Message: " + message);
             } catch (IOException e){
                 break;
             }
@@ -47,9 +47,9 @@ public class ReceiveThread extends Thread {
     public void sendMessage(byte[] byteArray){
         try {
             outputS.write(byteArray);
-            Log.d("BluetoothApp", "Data sent: " + byteArray);
+            Log.d("ReceiveThread", "Data sent: " + byteArray);
         } catch (IOException e) {
-            Log.e("BluetoothApp", "Error sending data", e);
+            Log.e("ReceiveThread", "Error sending data", e);
         }
     }
 }

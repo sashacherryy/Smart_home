@@ -1,6 +1,7 @@
 package com.example.diplomproject;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -20,25 +21,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.diplomproject.adapter.BtConsts;
 import com.example.diplomproject.bluetooth.BtConnection;
-import com.example.diplomproject.bluetooth.ConnectThread;
+import com.example.diplomproject.bluetooth.ReceiveThread;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
-
 public class MainActivity extends AppCompatActivity {
-    private final int REQUEST_ENABLE =1;
-    Button connectBlueButton;
+    private final int REQUEST_ENABLE = 1;
+    private Button connectBlueButton;
     private String deviceName;
-    BluetoothAdapter btAdapter;
-    Intent btEnablingIntent;
-    int requestCodeForEnable;
+    private BluetoothAdapter btAdapter;
+    private Intent btEnablingIntent;
+    private int requestCodeForEnable;
     private BtConnection btConnection;
     private SharedPreferences pref;
     private static final int REQUEST_CODE_SPEECH_INPUT = 100;
@@ -47,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText timeoutEditText;
     private Button confirmButton;
     private TextView textView;
+    private ReceiveThread rThread;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,14 +53,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         btConnection = new BtConnection(this, textView);
-        connectBlueButton = (Button) findViewById(R.id.connectBlueButton);
+        connectBlueButton = findViewById(R.id.connectBlueButton);
         btAdapter = BluetoothAdapter.getDefaultAdapter();
-        btEnablingIntent= new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        requestCodeForEnable = 1 ;
-
+        btEnablingIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        requestCodeForEnable = 1;
 
         Intent intent = getIntent();
         deviceName = intent.getStringExtra(BtConsts.NAME_KEY);
+        rThread = intent.getParcelableExtra("rThread");
+        if (rThread == null) {
+            Log.e("MainActivity", "rThread is null");
+        }
 
         timeoutEditText = findViewById(R.id.timeout);
         confirmButton = findViewById(R.id.confirmButton);
@@ -69,15 +71,13 @@ public class MainActivity extends AppCompatActivity {
         checkBlue();
         init();
         confirmBut();
-        confirmButton.setOnClickListener(v -> {
-            if(btConnection != null ) btConnection.sendData("C");
-        });
+
+
 
         Log.e("BtListActivity", "btConnection" + btConnection);
     }
 
     private void init() {
-
         pref = getSharedPreferences(BtConsts.MY_PREF, Context.MODE_PRIVATE);
         buttonClick();
 
@@ -89,9 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
         ToggleButton toggleButtonC = findViewById(R.id.DIODE_ON);
         toggleButtonC.setOnCheckedChangeListener((buttonView, isChecked) -> sendDataOverBluetooth(isChecked ? "C" : "D"));
-
     }
-
 
     @Override
     protected void onResume() {
@@ -99,33 +97,23 @@ public class MainActivity extends AppCompatActivity {
         TextView bluetoothNameTextView = findViewById(R.id.bluetoothsurName);
         if (bluetoothNameTextView != null && deviceName != null) {
             bluetoothNameTextView.setText(deviceName);
-        } else {
-
         }
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == requestCodeForEnable) {
-
             if (resultCode == RESULT_OK) {
-
                 Toast.makeText(getApplicationContext(), "Bluetooth увімкнений", Toast.LENGTH_LONG).show();
                 updateBluetoothNameTextView();
                 Intent i = new Intent(MainActivity.this, BtListActivity.class);
                 startActivity(i);
-
             } else if (resultCode == RESULT_CANCELED) {
-
-                Toast.makeText(getApplicationContext(), "Bluetooth відмінений", Toast.LENGTH_LONG).show();
-
+                Toast.makeText(getApplicationContext(), "Bluetooth вимкнений", Toast.LENGTH_LONG).show();
             }
-
         }
-
 
         if (requestCode == REQUEST_CODE_SPEECH_INPUT && resultCode == RESULT_OK && data != null) {
             ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
@@ -149,82 +137,41 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void checkBlue(){
-        connectBlueButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(btAdapter == null){
-                    Toast.makeText(getApplicationContext(),"Данний пристрій не підтримує Bluetooth",Toast.LENGTH_LONG).show();
-                }else{
-                    if(!btAdapter.isEnabled()){
-                        startActivityForResult(btEnablingIntent,requestCodeForEnable);
-                    }else{
-                        Intent i = new Intent(MainActivity.this, BtListActivity.class);
-                        startActivity(i);
-                    }
+    private void checkBlue() {
+        connectBlueButton.setOnClickListener(v -> {
+            if (btAdapter == null) {
+                Toast.makeText(getApplicationContext(), "Даний пристрій не підтримує Bluetooth", Toast.LENGTH_LONG).show();
+            } else {
+                if (!btAdapter.isEnabled()) {
+                    startActivityForResult(btEnablingIntent, requestCodeForEnable);
+                } else {
+                    Intent i = new Intent(MainActivity.this, BtListActivity.class);
+                    startActivity(i);
                 }
             }
         });
     }
 
-    private void startVoiceRecognition() {
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "uk-UA"); // Встановлення мови розпізнавання (українська)
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Говоріть щось..."); // Повідомлення для користувача
-        try {
-            startActivityForResult(intent, REQUEST_CODE_SPEECH_INPUT);
-        } catch (ActivityNotFoundException a) {
-            Toast.makeText(getApplicationContext(), "Розпізнавання голосу не підтримується на цьому пристрої", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void updateToggleButtonStatus(CompoundButton buttonView, boolean isChecked, String deviceName) {
-
-        String status = isChecked ? deviceName + "_on" : deviceName + "_off";
-        int statusResourceId = getResources().getIdentifier(status, "string", getPackageName());
-        String statusText = getResources().getString(statusResourceId);
-
-        //TextView textView = findViewById(R.id.textView);
-        //textView.setText(statusText);
-
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (handler != null && toggleOffRunnable != null) {
-            handler.removeCallbacks(toggleOffRunnable);
-        }
-    }
-
-    private void confirmBut(){
-        confirmButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String minutesStr = timeoutEditText.getText().toString();
-                if (!minutesStr.isEmpty()) {
-                    int minutes = Integer.parseInt(minutesStr);
-
-                    if (minutes > 0) {
-                        handler.removeCallbacksAndMessages(null);
-                        startTimer(minutes);
-                        toggleOffRunnable = new Runnable() {
-                            @Override
-                            public void run() {
-                                turnOffAllToggleButtons();
-                                Toast.makeText(MainActivity.this, "Всі сигнали вимкнені", Toast.LENGTH_SHORT).show();
-                            }
-                        };
-                        handler.postDelayed(toggleOffRunnable, minutes * 60 * 1000);
-                    } else {
-                        Toast.makeText(MainActivity.this, "Введіть додатнє число хвилин", Toast.LENGTH_SHORT).show();
-                    }
+    private void confirmBut() {
+        confirmButton.setOnClickListener(v -> {
+            String minutesStr = timeoutEditText.getText().toString();
+            if (!minutesStr.isEmpty()) {
+                int minutes = Integer.parseInt(minutesStr);
+                if (minutes > 0) {
+                    handler.removeCallbacksAndMessages(null);
+                    startTimer(minutes);
+                    toggleOffRunnable = () -> {
+                        turnOffAllToggleButtons();
+                        Toast.makeText(MainActivity.this, "Всі сигнали вимкнені", Toast.LENGTH_SHORT).show();
+                    };
+                    handler.postDelayed(toggleOffRunnable, minutes * 60 * 1000);
                 } else {
-                    Toast.makeText(MainActivity.this, "Поле введення порожнє", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Введіть додатнє число хвилин", Toast.LENGTH_SHORT).show();
                 }
-                timeoutEditText.setText("");
+            } else {
+                Toast.makeText(MainActivity.this, "Поле введення порожнє", Toast.LENGTH_SHORT).show();
             }
+            timeoutEditText.setText("");
         });
     }
 
@@ -253,8 +200,6 @@ public class MainActivity extends AppCompatActivity {
                 int seconds = secondsLeft % 60;
                 String timeLeftFormatted = String.format("%02d:%02d", minutes, seconds);
                 timeLess.setText(timeLeftFormatted);
-
-                // Надсилання даних через Bluetooth
                 sendDataOverBluetooth(timeLeftFormatted);
 
                 if (secondsLeft > 0) {
@@ -265,51 +210,45 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void buttonClick(){
-
+    private void buttonClick() {
         Button voiceRecognizerButton = findViewById(R.id.VOICE_RECOGNIZER);
-        voiceRecognizerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                startVoiceRecognition();
-
-            }
-        });
+        voiceRecognizerButton.setOnClickListener(v -> startVoiceRecognition());
 
         ToggleButton heaterToggleButton = findViewById(R.id.HEATER_ON);
-        heaterToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                updateToggleButtonStatus(buttonView, isChecked, "heater");
-            }
-        });
+        heaterToggleButton.setOnCheckedChangeListener((buttonView, isChecked) -> updateToggleButtonStatus(buttonView, isChecked, "heater"));
 
         ToggleButton diodeToggleButton = findViewById(R.id.DIODE_ON);
-
-        diodeToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                updateToggleButtonStatus(buttonView, isChecked, "diode");
-            }
-        });
+        diodeToggleButton.setOnCheckedChangeListener((buttonView, isChecked) -> updateToggleButtonStatus(buttonView, isChecked, "diode"));
 
         ToggleButton fanToggleButton = findViewById(R.id.FAN_ON);
-        fanToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        fanToggleButton.setOnCheckedChangeListener((buttonView, isChecked) -> updateToggleButtonStatus(buttonView, isChecked, "fan"));
+    }
 
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+    private void startVoiceRecognition() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "uk-UA"); // Встановлення мови розпізнавання (українська)
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Говоріть щось..."); // Повідомлення для користувача
+        try {
+            startActivityForResult(intent, REQUEST_CODE_SPEECH_INPUT);
+        } catch (ActivityNotFoundException a) {
+            Toast.makeText(getApplicationContext(), "Розпізнавання голосу не підтримується на цьому пристрої", Toast.LENGTH_SHORT).show();
+        }
+    }
 
-                updateToggleButtonStatus(buttonView, isChecked, "fan");
+    private void updateToggleButtonStatus(CompoundButton buttonView, boolean isChecked, String deviceName) {
 
-            }
-        });
+        String status = isChecked ? deviceName + "_on" : deviceName + "_off";
+        int statusResourceId = getResources().getIdentifier(status, "string", getPackageName());
+        String statusText = getResources().getString(statusResourceId);
+
+        //TextView textView = findViewById(R.id.textView);
+        //textView.setText(statusText);
 
     }
 
     private void clearTextViewWithAnimation() {
         TextView textView = findViewById(R.id.textView);
-
         Animation fadeOut = new AlphaAnimation(1, 0);
         fadeOut.setInterpolator(new AccelerateInterpolator());
         fadeOut.setDuration(3500);
@@ -320,9 +259,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-
                 textView.setText("");
-
             }
 
             @Override
@@ -331,12 +268,7 @@ public class MainActivity extends AppCompatActivity {
 
         textView.startAnimation(fadeOut);
 
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                textView.setVisibility(View.VISIBLE);
-            }
-        }, 5000);
+        handler.postDelayed(() -> textView.setVisibility(View.VISIBLE), 5000);
     }
 
     private void handleVoiceCommand(String command) {
@@ -358,10 +290,7 @@ public class MainActivity extends AppCompatActivity {
             heaterToggleButton.setChecked(true);
         } else if (lowerCaseCommand.equals("вимкни нагрівач")) {
             heaterToggleButton.setChecked(false);
-        } else {
-
         }
-
     }
 
     private void sendDataOverBluetooth(String data) {
@@ -371,6 +300,4 @@ public class MainActivity extends AppCompatActivity {
             Log.e("MainActivity", "Bluetooth connection is null");
         }
     }
-
-
 }

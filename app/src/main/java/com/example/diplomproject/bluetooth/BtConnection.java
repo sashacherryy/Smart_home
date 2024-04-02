@@ -10,8 +10,6 @@ import android.widget.Toast;
 
 import com.example.diplomproject.adapter.BtConsts;
 
-import java.io.IOException;
-
 public class BtConnection {
 
     private Context context;
@@ -22,27 +20,19 @@ public class BtConnection {
     private TextView textView;
 
     public BtConnection(Context context, TextView textView) {
-
         this.context = context;
         this.textView = textView;
         pref = context.getSharedPreferences(BtConsts.MY_PREF, Context.MODE_PRIVATE);
-        Log.d("btAdapter" , "btAdapter " + btAdapter);
         btAdapter = BluetoothAdapter.getDefaultAdapter();
-        Log.d("btAdapter" , "btAdapter " + btAdapter);
-
     }
 
-    public void connect(){
-
+    public void connect() {
         String mac = pref.getString(BtConsts.MAC_KEY, "");
         if (!btAdapter.isEnabled() || mac.isEmpty()) return;
         device = btAdapter.getRemoteDevice(mac);
-        Log.e("MyLogDevice", "Device" + device );
         if (device == null) return;
         connectThread = new ConnectThread(context, btAdapter, device, textView);
         connectThread.start();
-        Log.i("connectThread_data", "connectThread Data about it " + connectThread);
-
     }
 
     public void sendData(String data) {
@@ -50,9 +40,9 @@ public class BtConnection {
             connectThread.getRThread().sendMessage(data.getBytes());
             Log.d("BluetoothApp", "Data sent: " + data);
         } else {
-            Log.e("BluetoothApp", "Bluetooth connection is not established " + connectThread);
+            Log.e("BluetoothApp", "Bluetooth connection is not established or lost");
+            Toast.makeText(context, "Bluetooth connection is not established or lost", Toast.LENGTH_SHORT).show();
         }
     }
-
-
 }
+
