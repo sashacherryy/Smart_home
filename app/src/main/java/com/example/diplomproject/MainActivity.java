@@ -1,5 +1,6 @@
 package com.example.diplomproject;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.ActivityNotFoundException;
@@ -32,7 +33,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     private final int REQUEST_ENABLE = 1;
-    private Button connectBlueButton;
+
     private String deviceName;
     private BluetoothAdapter btAdapter;
     private Intent btEnablingIntent;
@@ -43,10 +44,11 @@ public class MainActivity extends AppCompatActivity {
     private Runnable toggleOffRunnable;
     private Handler handler = new Handler();
     private EditText timeoutEditText;
-    private Button confirmButton;
+    private Button confirmButton, buttonA , connectBlueButton;
     private TextView textView;
     private ReceiveThread rThread;
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +67,11 @@ public class MainActivity extends AppCompatActivity {
             Log.e("MainActivity", "rThread is null");
         }
 
+        buttonA = findViewById(R.id.buttonA);
+        buttonA.setOnClickListener(v -> {
+            btConnection.sendMessage("buttonA");
+        });
+
         timeoutEditText = findViewById(R.id.timeout);
         confirmButton = findViewById(R.id.confirmButton);
 
@@ -82,13 +89,13 @@ public class MainActivity extends AppCompatActivity {
         buttonClick();
 
         ToggleButton toggleButtonA = findViewById(R.id.FAN_ON);
-        toggleButtonA.setOnCheckedChangeListener((buttonView, isChecked) -> sendDataOverBluetooth(isChecked ? "A" : "D"));
+        toggleButtonA.setOnCheckedChangeListener((buttonView, isChecked) -> btConnection.sendMessage(isChecked ? "A" : "D"));
 
         ToggleButton toggleButtonB = findViewById(R.id.HEATER_ON);
-        toggleButtonB.setOnCheckedChangeListener((buttonView, isChecked) -> sendDataOverBluetooth(isChecked ? "B" : "D"));
+        toggleButtonB.setOnCheckedChangeListener((buttonView, isChecked) -> btConnection.sendMessage(isChecked ? "B" : "D"));
 
         ToggleButton toggleButtonC = findViewById(R.id.DIODE_ON);
-        toggleButtonC.setOnCheckedChangeListener((buttonView, isChecked) -> sendDataOverBluetooth(isChecked ? "C" : "D"));
+        toggleButtonC.setOnCheckedChangeListener((buttonView, isChecked) -> btConnection.sendMessage(isChecked ? "C" : "D"));
     }
 
     @Override
@@ -200,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
                 int seconds = secondsLeft % 60;
                 String timeLeftFormatted = String.format("%02d:%02d", minutes, seconds);
                 timeLess.setText(timeLeftFormatted);
-                sendDataOverBluetooth(timeLeftFormatted);
+                btConnection.sendMessage(timeLeftFormatted);
 
                 if (secondsLeft > 0) {
                     secondsLeft--;
@@ -293,11 +300,5 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void sendDataOverBluetooth(String data) {
-        if (btConnection != null) {
-            btConnection.sendData(data);
-        } else {
-            Log.e("MainActivity", "Bluetooth connection is null");
-        }
-    }
+
 }

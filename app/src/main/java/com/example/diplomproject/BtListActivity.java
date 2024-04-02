@@ -68,6 +68,8 @@ public class BtListActivity extends AppCompatActivity {
         getBtPermission();
         checkHome();
 
+
+        // Ініціалізація btConnection
         btConnection = new BtConnection(this, textView);
         Log.e("BtListActivity", "btConnection" + btConnection);
 
@@ -103,9 +105,10 @@ public class BtListActivity extends AppCompatActivity {
                 ListItem item = (ListItem) parent.getItemAtPosition(position);
                 if (item.getItemType().equals(BtAdapter.DISCOVERY_ITEM_TYPE)) {
                     BluetoothDevice device = item.getBtDevice();
-                    /*connectThread = new ConnectThread(BtListActivity.this, btAdapter, device, textView);
+                    connectThread = new ConnectThread(BtListActivity.this, btAdapter, device, textView);
                     connectThread.start();
-                    Log.i("BtListAcitivty", "connectThread Data about it " + connectThread);*/
+                } else {
+
                 }
             }
         });

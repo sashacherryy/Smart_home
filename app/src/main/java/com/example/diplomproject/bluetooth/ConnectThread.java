@@ -54,7 +54,6 @@ public class ConnectThread extends Thread {
             mSocket.connect();
             rThread = new ReceiveThread(mSocket);
             rThread.start();
-            isConnected = true;
 
             new Handler(Looper.getMainLooper()).post(() -> {
                 if (deviceName != null) {
@@ -62,16 +61,11 @@ public class ConnectThread extends Thread {
                 }
             });
 
-            // Перевіряємо, чи вдалося підключитися перед переходом на головну сторінку
-            if (isConnected) {
-                Intent intent = new Intent(context, MainActivity.class);
-                intent.putExtra(BtConsts.NAME_KEY, deviceName);
-                intent.putExtra("isConnected", isConnected);
-                context.startActivity(intent);
-            }
+            Intent intent = new Intent(context, MainActivity.class);
+            intent.putExtra(BtConsts.NAME_KEY, deviceName);
+            intent.putExtra("isConnected", isConnected);
+            context.startActivity(intent);
         } catch (IOException e) {
-            isConnected = false;
-            Log.e("ConnectThread", "Connection failed", e);
             Toast.makeText(context, "Connection failed", Toast.LENGTH_SHORT).show();
             closeConnection();
         }
@@ -80,11 +74,8 @@ public class ConnectThread extends Thread {
     @SuppressLint("MissingPermission")
     public void closeConnection() {
         try {
-            if (mSocket != null) {
-                mSocket.close();
-            }
+            mSocket.close();
         } catch (IOException e) {
-            Log.e("ConnectThread", "Could not close the client socket", e);
         }
     }
 
@@ -92,9 +83,7 @@ public class ConnectThread extends Thread {
         return rThread;
     }
 
-    public boolean isConnected() {
-        return isConnected;
-    }
+
 }
 
 

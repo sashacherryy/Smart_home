@@ -10,6 +10,8 @@ import android.widget.Toast;
 
 import com.example.diplomproject.adapter.BtConsts;
 
+import java.io.IOException;
+
 public class BtConnection {
 
     private Context context;
@@ -35,13 +37,11 @@ public class BtConnection {
         connectThread.start();
     }
 
-    public void sendData(String data) {
-        if (connectThread != null) {
-            connectThread.getRThread().sendMessage(data.getBytes());
-            Log.d("BluetoothApp", "Data sent: " + data);
+    public void sendMessage(String message) {
+        if (connectThread != null ) {
+            connectThread.getRThread().sendMessage(message.getBytes());
         } else {
-            Log.e("BluetoothApp", "Bluetooth connection is not established or lost");
-            Toast.makeText(context, "Bluetooth connection is not established or lost", Toast.LENGTH_SHORT).show();
+            Log.e("BtConnection", "Unable to send message: Connection not established or still initializing");
         }
     }
 }
