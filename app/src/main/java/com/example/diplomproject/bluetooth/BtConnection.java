@@ -35,14 +35,6 @@ public class BtConnection {
         connectThread.start();
     }
 
-    public void sendData(String data) {
-        if (connectThread != null) {
-            connectThread.getRThread().sendMessage(data.getBytes());
-            Log.d("BluetoothApp", "Data sent: " + data);
-        } else {
-            Log.e("BluetoothApp", "Bluetooth connection is not established or lost");
-            Toast.makeText(context, "Bluetooth connection is not established or lost", Toast.LENGTH_SHORT).show();
-        }
-    }
+
 }
 

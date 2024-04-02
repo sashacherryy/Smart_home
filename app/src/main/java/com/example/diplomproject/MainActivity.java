@@ -26,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.diplomproject.adapter.BtConsts;
 import com.example.diplomproject.bluetooth.BtConnection;
+import com.example.diplomproject.bluetooth.ConnectThread;
 import com.example.diplomproject.bluetooth.ReceiveThread;
 
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
     private final int REQUEST_ENABLE = 1;
     private Button connectBlueButton;
+    private ConnectThread connectThread;
     private String deviceName;
     private BluetoothAdapter btAdapter;
     private Intent btEnablingIntent;
@@ -71,8 +73,6 @@ public class MainActivity extends AppCompatActivity {
         checkBlue();
         init();
         confirmBut();
-
-
 
         Log.e("BtListActivity", "btConnection" + btConnection);
     }
@@ -293,11 +293,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void sendDataOverBluetooth(String data) {
-        if (btConnection != null) {
-            btConnection.sendData(data);
+    public void sendDataOverBluetooth(String data) {
+        if (connectThread != null) {
+            connectThread.sendData(data);
         } else {
-            Log.e("MainActivity", "Bluetooth connection is null");
+            Toast.makeText(this, "Connecting to Bluetooth...", Toast.LENGTH_SHORT).show();
         }
     }
 }
