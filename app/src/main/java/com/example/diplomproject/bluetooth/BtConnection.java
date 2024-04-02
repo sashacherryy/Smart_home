@@ -18,7 +18,8 @@ public class BtConnection {
     private SharedPreferences pref;
     private BluetoothAdapter btAdapter;
     private BluetoothDevice device;
-    private ConnectThread connectThread;
+    private volatile ConnectThread connectThread; // Змінна connectThread тепер є volatile
+
     private TextView textView;
 
     public BtConnection(Context context, TextView textView) {
@@ -28,21 +29,27 @@ public class BtConnection {
         btAdapter = BluetoothAdapter.getDefaultAdapter();
     }
 
-    public void connect() {
+    public synchronized void connect() {
         String mac = pref.getString(BtConsts.MAC_KEY, "");
-        if (!btAdapter.isEnabled() || mac.isEmpty()) return;
+        if (!btAdapter.isEnabled()) {
+            Log.e("BtConnection", "Bluetooth is not enabled.");
+            return;
+        }
+        if (mac.isEmpty()) {
+            Log.e("BtConnection", "MAC address is empty.");
+            return;
+        }
         device = btAdapter.getRemoteDevice(mac);
-        if (device == null) return;
-        connectThread = new ConnectThread(context, btAdapter, device, textView);
+        if (device == null) {
+            Log.e("BtConnection", "Device not found.");
+            return;
+        }
+        ConnectThread connectThread = new ConnectThread(context, btAdapter, device, textView);
+        BluetoothManager.getInstance().setConnectThread(connectThread);
         connectThread.start();
+        Log.i("BtConnection", "ConnectThread started: " + connectThread);
     }
 
-    public void sendMessage(String message) {
-        if (connectThread != null ) {
-            connectThread.getRThread().sendMessage(message.getBytes());
-        } else {
-            Log.e("BtConnection", "Unable to send message: Connection not established or still initializing");
-        }
-    }
+
 }
 

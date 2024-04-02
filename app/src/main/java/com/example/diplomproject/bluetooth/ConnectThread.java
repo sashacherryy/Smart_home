@@ -54,7 +54,7 @@ public class ConnectThread extends Thread {
             mSocket.connect();
             rThread = new ReceiveThread(mSocket);
             rThread.start();
-
+            isConnected = true;
             new Handler(Looper.getMainLooper()).post(() -> {
                 if (deviceName != null) {
                     Toast.makeText(context, "Пристрій підключено: " + deviceName, Toast.LENGTH_SHORT).show();
@@ -82,7 +82,18 @@ public class ConnectThread extends Thread {
     public ReceiveThread getRThread() {
         return rThread;
     }
+    public boolean isConnected() {
+        return isConnected;
+    }
 
+    public void sendData(String data) {
+        if (rThread != null) {
+            rThread.sendMessage(data.getBytes());
+            Log.d("BluetoothApp", "Data sent: " + data);
+        } else {
+            Log.e("BluetoothApp", "Bluetooth connection is not established or lost");
+        }
+    }
 
 }
 

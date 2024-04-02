@@ -30,6 +30,7 @@ import androidx.core.content.ContextCompat;
 
 import com.example.diplomproject.adapter.BtAdapter;
 import com.example.diplomproject.adapter.ListItem;
+import com.example.diplomproject.bluetooth.BluetoothManager;
 import com.example.diplomproject.bluetooth.BtConnection;
 import com.example.diplomproject.bluetooth.ConnectThread;
 
@@ -50,6 +51,7 @@ public class BtListActivity extends AppCompatActivity {
     private ArrayAdapter<String> deviceArrayAdapter;
     private ArrayList<BluetoothDevice> deviceList;
     private Button btHome;
+    private Context context;
     private Button searchButton;
     private ListView deviceListView;
     private BtConnection btConnection;
@@ -105,7 +107,9 @@ public class BtListActivity extends AppCompatActivity {
                 ListItem item = (ListItem) parent.getItemAtPosition(position);
                 if (item.getItemType().equals(BtAdapter.DISCOVERY_ITEM_TYPE)) {
                     BluetoothDevice device = item.getBtDevice();
-                    connectThread = new ConnectThread(BtListActivity.this, btAdapter, device, textView);
+
+                    ConnectThread connectThread = new ConnectThread(context, btAdapter, device, textView);
+                    BluetoothManager.getInstance().setConnectThread(connectThread);
                     connectThread.start();
                 } else {
 

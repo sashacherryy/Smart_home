@@ -1,6 +1,5 @@
 package com.example.diplomproject;
 
-import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.ActivityNotFoundException;
@@ -26,7 +25,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.diplomproject.adapter.BtConsts;
+import com.example.diplomproject.bluetooth.BluetoothManager;
 import com.example.diplomproject.bluetooth.BtConnection;
+import com.example.diplomproject.bluetooth.ConnectThread;
 import com.example.diplomproject.bluetooth.ReceiveThread;
 
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
     private String deviceName;
     private BluetoothAdapter btAdapter;
+    private volatile ConnectThread connectThread;
     private Intent btEnablingIntent;
     private int requestCodeForEnable;
     private BtConnection btConnection;
@@ -48,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView textView;
     private ReceiveThread rThread;
 
-    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         btEnablingIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         requestCodeForEnable = 1;
+        ConnectThread connectThread = BluetoothManager.getInstance().getConnectThread();
 
         Intent intent = getIntent();
         deviceName = intent.getStringExtra(BtConsts.NAME_KEY);
@@ -67,10 +69,6 @@ public class MainActivity extends AppCompatActivity {
             Log.e("MainActivity", "rThread is null");
         }
 
-        buttonA = findViewById(R.id.buttonA);
-        buttonA.setOnClickListener(v -> {
-            btConnection.sendMessage("buttonA");
-        });
 
         timeoutEditText = findViewById(R.id.timeout);
         confirmButton = findViewById(R.id.confirmButton);
@@ -79,23 +77,33 @@ public class MainActivity extends AppCompatActivity {
         init();
         confirmBut();
 
+        Boolean isConnected = getIntent().getBooleanExtra("isConnected", false);
+        if(isConnected) {
+            ToggleButton toggleButtonA = findViewById(R.id.FAN_ON);
+            toggleButtonA.setOnCheckedChangeListener((buttonView, isChecked) -> sendMessage(isChecked ? "A" : "D"));
+
+            ToggleButton toggleButtonB = findViewById(R.id.HEATER_ON);
+            toggleButtonB.setOnCheckedChangeListener((buttonView, isChecked) -> sendMessage(isChecked ? "B" : "D"));
+
+            ToggleButton toggleButtonC = findViewById(R.id.DIODE_ON);
+            toggleButtonC.setOnCheckedChangeListener((buttonView, isChecked) -> sendMessage(isChecked ? "C" : "D"));
+
+            buttonA = findViewById(R.id.buttonA);
+            buttonA.setOnClickListener(v -> {
+                sendMessage("C");
+            });
+        }
 
 
-        Log.e("BtListActivity", "btConnection" + btConnection);
+        Log.i("MainActivity", "Connected: " + isConnected);
+        Log.e("MainActivity", "btConnection" + btConnection);
     }
 
     private void init() {
         pref = getSharedPreferences(BtConsts.MY_PREF, Context.MODE_PRIVATE);
         buttonClick();
 
-        ToggleButton toggleButtonA = findViewById(R.id.FAN_ON);
-        toggleButtonA.setOnCheckedChangeListener((buttonView, isChecked) -> btConnection.sendMessage(isChecked ? "A" : "D"));
 
-        ToggleButton toggleButtonB = findViewById(R.id.HEATER_ON);
-        toggleButtonB.setOnCheckedChangeListener((buttonView, isChecked) -> btConnection.sendMessage(isChecked ? "B" : "D"));
-
-        ToggleButton toggleButtonC = findViewById(R.id.DIODE_ON);
-        toggleButtonC.setOnCheckedChangeListener((buttonView, isChecked) -> btConnection.sendMessage(isChecked ? "C" : "D"));
     }
 
     @Override
@@ -207,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
                 int seconds = secondsLeft % 60;
                 String timeLeftFormatted = String.format("%02d:%02d", minutes, seconds);
                 timeLess.setText(timeLeftFormatted);
-                btConnection.sendMessage(timeLeftFormatted);
+                sendMessage(timeLeftFormatted);
 
                 if (secondsLeft > 0) {
                     secondsLeft--;
@@ -299,6 +307,12 @@ public class MainActivity extends AppCompatActivity {
             heaterToggleButton.setChecked(false);
         }
     }
-
+    public synchronized void sendMessage(String message) { // Синхронізуємо метод sendMessage
+        if (connectThread != null ) {
+            connectThread.sendData(message);
+        } else {
+            Log.e("MainActivity", "Bluetooth not connected or ConnectThread is null");
+        }
+    }
 
 }
