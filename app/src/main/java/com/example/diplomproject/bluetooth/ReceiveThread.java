@@ -23,11 +23,6 @@ public class ReceiveThread extends Thread {
             Log.e("ReceiveThread", "Error occurred when creating input stream", e);
         }
 
-        try {
-            outputS = socket.getOutputStream();
-        } catch (IOException e) {
-            Log.e("ReceiveThread", "Error occurred when creating output stream", e);
-        }
     }
 
     @Override
@@ -44,12 +39,5 @@ public class ReceiveThread extends Thread {
         }
     }
 
-    public void sendMessage(byte[] byteArray){
-        try {
-            outputS.write(byteArray);
-            Log.d("ReceiveThread", "Data sent: " + byteArray);
-        } catch (IOException e) {
-            Log.e("ReceiveThread", "Error sending data", e);
-        }
-    }
+
 }

@@ -12,10 +12,7 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.diplomproject.MainActivity;
-import com.example.diplomproject.R;
 import com.example.diplomproject.adapter.BtConsts;
 
 import java.io.IOException;
@@ -23,6 +20,7 @@ import java.io.IOException;
 public class ConnectThread extends Thread {
 
     private Context context;
+    private MainActivity mainActivity;
     private BluetoothAdapter btAdapter;
     private BluetoothSocket mSocket;
     private BluetoothDevice mDevice;
@@ -50,25 +48,20 @@ public class ConnectThread extends Thread {
     public void run() {
         String deviceName = mDevice.getName();
         btAdapter.cancelDiscovery();
-        try {
-            mSocket.connect();
-            rThread = new ReceiveThread(mSocket);
-            rThread.start();
-            isConnected = true;
-            new Handler(Looper.getMainLooper()).post(() -> {
-                if (deviceName != null) {
-                    Toast.makeText(context, "Пристрій підключено: " + deviceName, Toast.LENGTH_SHORT).show();
-                }
-            });
+        rThread = new ReceiveThread(mSocket);
+        rThread.start();
+        isConnected = true;
+        new Handler(Looper.getMainLooper()).post(() -> {
+            if (deviceName != null) {
+                Toast.makeText(context, "Пристрій підключено: " + deviceName, Toast.LENGTH_SHORT).show();
+            }
+        });
 
-            Intent intent = new Intent(context, MainActivity.class);
-            intent.putExtra(BtConsts.NAME_KEY, deviceName);
-            intent.putExtra("isConnected", isConnected);
-            context.startActivity(intent);
-        } catch (IOException e) {
-            Toast.makeText(context, "Connection failed", Toast.LENGTH_SHORT).show();
-            closeConnection();
-        }
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.putExtra(BtConsts.NAME_KEY, deviceName);
+        intent.putExtra("isConnected", isConnected);
+        intent.putExtra("deviceMAC", mDevice.getAddress());
+        context.startActivity(intent);
     }
 
     @SuppressLint("MissingPermission")
@@ -86,14 +79,6 @@ public class ConnectThread extends Thread {
         return isConnected;
     }
 
-    public void sendData(String data) {
-        if (rThread != null) {
-            rThread.sendMessage(data.getBytes());
-            Log.d("BluetoothApp", "Data sent: " + data);
-        } else {
-            Log.e("BluetoothApp", "Bluetooth connection is not established or lost");
-        }
-    }
 
 }
 

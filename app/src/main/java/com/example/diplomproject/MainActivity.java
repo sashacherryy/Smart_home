@@ -1,7 +1,9 @@
 package com.example.diplomproject;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -30,7 +32,10 @@ import com.example.diplomproject.bluetooth.BtConnection;
 import com.example.diplomproject.bluetooth.ConnectThread;
 import com.example.diplomproject.bluetooth.ReceiveThread;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
     private final int REQUEST_ENABLE = 1;
@@ -44,31 +49,35 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences pref;
     private static final int REQUEST_CODE_SPEECH_INPUT = 100;
     private Runnable toggleOffRunnable;
+    private BluetoothSocket mSocket;
     private Handler handler = new Handler();
     private EditText timeoutEditText;
     private Button confirmButton, buttonA , connectBlueButton;
     private TextView textView;
     private ReceiveThread rThread;
+    private String deviceMAC;
+    private OutputStream outputS;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         btConnection = new BtConnection(this, textView);
         connectBlueButton = findViewById(R.id.connectBlueButton);
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         btEnablingIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         requestCodeForEnable = 1;
-        ConnectThread connectThread = BluetoothManager.getInstance().getConnectThread();
 
         Intent intent = getIntent();
         deviceName = intent.getStringExtra(BtConsts.NAME_KEY);
+        deviceMAC = intent.getStringExtra("deviceMAC");
+        Log.i("DeviceMac", "DevcieMac" + deviceMAC);
         rThread = intent.getParcelableExtra("rThread");
         if (rThread == null) {
             Log.e("MainActivity", "rThread is null");
         }
-
 
         timeoutEditText = findViewById(R.id.timeout);
         confirmButton = findViewById(R.id.confirmButton);
@@ -80,18 +89,19 @@ public class MainActivity extends AppCompatActivity {
         Boolean isConnected = getIntent().getBooleanExtra("isConnected", false);
         if(isConnected) {
             ToggleButton toggleButtonA = findViewById(R.id.FAN_ON);
-            toggleButtonA.setOnCheckedChangeListener((buttonView, isChecked) -> sendMessage(isChecked ? "A" : "D"));
+            toggleButtonA.setOnCheckedChangeListener((buttonView, isChecked) -> sendData(isChecked ? "A" : "D"));
 
             ToggleButton toggleButtonB = findViewById(R.id.HEATER_ON);
-            toggleButtonB.setOnCheckedChangeListener((buttonView, isChecked) -> sendMessage(isChecked ? "B" : "D"));
+            toggleButtonB.setOnCheckedChangeListener((buttonView, isChecked) -> sendData(isChecked ? "B" : "D"));
 
             ToggleButton toggleButtonC = findViewById(R.id.DIODE_ON);
-            toggleButtonC.setOnCheckedChangeListener((buttonView, isChecked) -> sendMessage(isChecked ? "C" : "D"));
+            toggleButtonC.setOnCheckedChangeListener((buttonView, isChecked) -> sendData(isChecked ? "C" : "D"));
 
             buttonA = findViewById(R.id.buttonA);
             buttonA.setOnClickListener(v -> {
-                sendMessage("C");
+                sendData("C");
             });
+            connectToBluetoothDevice(deviceMAC);
         }
 
 
@@ -102,8 +112,6 @@ public class MainActivity extends AppCompatActivity {
     private void init() {
         pref = getSharedPreferences(BtConsts.MY_PREF, Context.MODE_PRIVATE);
         buttonClick();
-
-
     }
 
     @Override
@@ -114,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
             bluetoothNameTextView.setText(deviceName);
         }
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -215,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
                 int seconds = secondsLeft % 60;
                 String timeLeftFormatted = String.format("%02d:%02d", minutes, seconds);
                 timeLess.setText(timeLeftFormatted);
-                sendMessage(timeLeftFormatted);
+                sendData(timeLeftFormatted);
 
                 if (secondsLeft > 0) {
                     secondsLeft--;
@@ -260,6 +269,24 @@ public class MainActivity extends AppCompatActivity {
         //TextView textView = findViewById(R.id.textView);
         //textView.setText(statusText);
 
+    }
+
+    @SuppressLint("MissingPermission")
+    public void connectToBluetoothDevice(String deviceMAC) {
+        if(!deviceMAC.isEmpty()) {
+            BluetoothDevice device = btAdapter.getRemoteDevice(deviceMAC);
+            Log.e("ConnectToBluetoothDevice" , "ConnectToBluetoothDevice підтримується" + deviceMAC);
+            try {
+                mSocket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")); // UUID для з'єднання з Bluetooth пристроєм
+                mSocket.connect();
+                outputS = mSocket.getOutputStream();
+                Log.d("BluetoothApp", "Connected to Bluetooth device: " + device.getName());
+            } catch (IOException e) {
+                Log.e("BluetoothApp", "Error connecting to Bluetooth device", e);
+            }
+        }else{
+            Log.e("ConnectToBluetoothDevice" , "ConnectToBluetoothDevice не підтримується");
+        }
     }
 
     private void clearTextViewWithAnimation() {
@@ -307,12 +334,19 @@ public class MainActivity extends AppCompatActivity {
             heaterToggleButton.setChecked(false);
         }
     }
-    public synchronized void sendMessage(String message) { // Синхронізуємо метод sendMessage
-        if (connectThread != null ) {
-            connectThread.sendData(message);
-        } else {
-            Log.e("MainActivity", "Bluetooth not connected or ConnectThread is null");
+    private void sendData(String data) {
+        if (mSocket == null || outputS == null) {
+            Toast.makeText(this, "Bluetooth з'єднання не встановлено", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            outputS.write(data.getBytes());
+            Log.d("BluetoothApp", "Data sent: " + data);
+        } catch (IOException e) {
+            Log.e("BluetoothApp", "Error sending data", e);
         }
     }
 
 }
+
