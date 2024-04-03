@@ -1,6 +1,7 @@
 package com.example.diplomproject;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -10,6 +11,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.speech.RecognizerIntent;
 import android.util.Log;
 import android.view.View;
@@ -57,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
     private ReceiveThread rThread;
     private String deviceMAC;
     private OutputStream outputS;
+    private ProgressDialog progressDialog;
+    private boolean isCon = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -89,19 +93,24 @@ public class MainActivity extends AppCompatActivity {
         Boolean isConnected = getIntent().getBooleanExtra("isConnected", false);
         if(isConnected) {
             ToggleButton toggleButtonA = findViewById(R.id.FAN_ON);
-            toggleButtonA.setOnCheckedChangeListener((buttonView, isChecked) -> sendData(isChecked ? "A" : "D"));
+            toggleButtonA.setOnCheckedChangeListener((buttonView, isChecked) -> sendData(isChecked ? "A" : "a"));
 
             ToggleButton toggleButtonB = findViewById(R.id.HEATER_ON);
-            toggleButtonB.setOnCheckedChangeListener((buttonView, isChecked) -> sendData(isChecked ? "B" : "D"));
+            toggleButtonB.setOnCheckedChangeListener((buttonView, isChecked) -> sendData(isChecked ? "B" : "b"));
 
             ToggleButton toggleButtonC = findViewById(R.id.DIODE_ON);
-            toggleButtonC.setOnCheckedChangeListener((buttonView, isChecked) -> sendData(isChecked ? "C" : "D"));
+            toggleButtonC.setOnCheckedChangeListener((buttonView, isChecked) -> sendData(isChecked ? "C" : "c"));
 
-            buttonA = findViewById(R.id.buttonA);
-            buttonA.setOnClickListener(v -> {
-                sendData("C");
-            });
-            connectToBluetoothDevice(deviceMAC);
+            showProgressDialog();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (progressDialog != null && progressDialog.isShowing()) {
+                        connectToBluetoothDevice(deviceMAC);
+                        setTextView(deviceName);
+                    }
+                }
+            }, 2000);
         }
 
 
@@ -113,13 +122,10 @@ public class MainActivity extends AppCompatActivity {
         pref = getSharedPreferences(BtConsts.MY_PREF, Context.MODE_PRIVATE);
         buttonClick();
     }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
+    protected void setTextView(String str) {
         TextView bluetoothNameTextView = findViewById(R.id.bluetoothsurName);
-        if (bluetoothNameTextView != null && deviceName != null) {
-            bluetoothNameTextView.setText(deviceName);
+        if (bluetoothNameTextView != null && str != null && isCon) {
+            bluetoothNameTextView.setText(str);
         }
     }
 
@@ -280,6 +286,13 @@ public class MainActivity extends AppCompatActivity {
                 mSocket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")); // UUID для з'єднання з Bluetooth пристроєм
                 mSocket.connect();
                 outputS = mSocket.getOutputStream();
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    if (deviceName != null) {
+                        Toast.makeText(this, "Пристрій підключено: " + deviceName, Toast.LENGTH_SHORT).show();
+                    }
+                });
+                isCon = true;
+                if(outputS != null) dismissProgressDialog();
                 Log.d("BluetoothApp", "Connected to Bluetooth device: " + device.getName());
             } catch (IOException e) {
                 Log.e("BluetoothApp", "Error connecting to Bluetooth device", e);
@@ -347,6 +360,20 @@ public class MainActivity extends AppCompatActivity {
             Log.e("BluetoothApp", "Error sending data", e);
         }
     }
+
+    public void showProgressDialog() {
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Connecting...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+    }
+
+    public void dismissProgressDialog() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+    }
+
 
 }
 

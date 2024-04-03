@@ -51,32 +51,13 @@ public class ConnectThread extends Thread {
         rThread = new ReceiveThread(mSocket);
         rThread.start();
         isConnected = true;
-        new Handler(Looper.getMainLooper()).post(() -> {
-            if (deviceName != null) {
-                Toast.makeText(context, "Пристрій підключено: " + deviceName, Toast.LENGTH_SHORT).show();
-            }
-        });
+
 
         Intent intent = new Intent(context, MainActivity.class);
         intent.putExtra(BtConsts.NAME_KEY, deviceName);
         intent.putExtra("isConnected", isConnected);
         intent.putExtra("deviceMAC", mDevice.getAddress());
         context.startActivity(intent);
-    }
-
-    @SuppressLint("MissingPermission")
-    public void closeConnection() {
-        try {
-            mSocket.close();
-        } catch (IOException e) {
-        }
-    }
-
-    public ReceiveThread getRThread() {
-        return rThread;
-    }
-    public boolean isConnected() {
-        return isConnected;
     }
 
 
