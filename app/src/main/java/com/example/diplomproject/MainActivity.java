@@ -21,7 +21,6 @@ import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -55,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private Handler handler = new Handler();
     private EditText timeoutEditText;
     private Button confirmButton, buttonA , connectBlueButton;
-    private TextView textView;
+    private TextView textView, deviceInfo1, deviceInfo2;
     private ReceiveThread rThread;
     private String deviceMAC;
     private OutputStream outputS;
@@ -66,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 
         btConnection = new BtConnection(this, textView);
         connectBlueButton = findViewById(R.id.connectBlueButton);
@@ -85,6 +83,8 @@ public class MainActivity extends AppCompatActivity {
 
         timeoutEditText = findViewById(R.id.timeout);
         confirmButton = findViewById(R.id.confirmButton);
+        deviceInfo1 = findViewById(R.id.deviceInfo1);
+        deviceInfo2 = findViewById(R.id.deviceInfo2);
 
         checkBlue();
         init();
@@ -102,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
             toggleButtonC.setOnCheckedChangeListener((buttonView, isChecked) -> sendData(isChecked ? "C" : "c"));
 
             showProgressDialog();
+
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -111,24 +112,29 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }, 1000);
+            Runnable updateTextViewRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    updateTextView();
+                    handler.postDelayed(this, 10);
+                }
+            };
+            updateTextView();
+            handler.postDelayed(updateTextViewRunnable, 10);
         }
-
-
-        Log.i("MainActivity", "Connected: " + isConnected);
-        Log.e("MainActivity", "btConnection" + btConnection);
     }
 
     private void init() {
         pref = getSharedPreferences(BtConsts.MY_PREF, Context.MODE_PRIVATE);
         buttonClick();
     }
+
     protected void setTextView(String str) {
         TextView bluetoothNameTextView = findViewById(R.id.bluetoothsurName);
         if (bluetoothNameTextView != null && str != null && isCon) {
             bluetoothNameTextView.setText(str);
         }
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -266,42 +272,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void updateToggleButtonStatus(CompoundButton buttonView, boolean isChecked, String deviceName) {
+    private void updateTextView(){
+        if ( rThread != null && rThread.getMessage() != null && rThread.getMessage().contains("T")&& !rThread.getMessage().contains("H")) {
+            deviceInfo1.setText(rThread.getMessage());
+        }
+        if ( rThread != null && rThread.getMessage() != null && rThread.getMessage().contains("H")&& !rThread.getMessage().contains("T")) {
+            deviceInfo2.setText(rThread.getMessage());
+        }
+    }
 
+    private void updateToggleButtonStatus(CompoundButton buttonView, boolean isChecked, String deviceName) {
         String status = isChecked ? deviceName + "_on" : deviceName + "_off";
         int statusResourceId = getResources().getIdentifier(status, "string", getPackageName());
         String statusText = getResources().getString(statusResourceId);
 
-        //TextView textView = findViewById(R.id.textView);
-        //textView.setText(statusText);
-
-    }
-
-    @SuppressLint("MissingPermission")
-    public void connectToBluetoothDevice(String deviceMAC) {
-        if(!deviceMAC.isEmpty()) {
-            BluetoothDevice device = btAdapter.getRemoteDevice(deviceMAC);
-            Log.e("ConnectToBluetoothDevice" , "ConnectToBluetoothDevice підтримується" + deviceMAC);
-            try {
-                mSocket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")); // UUID для з'єднання з Bluetooth пристроєм
-                mSocket.connect();
-                outputS = mSocket.getOutputStream();
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    if (deviceName != null) {
-                        Toast.makeText(this, "Пристрій підключено: " + deviceName, Toast.LENGTH_SHORT).show();
-                        rThread = new ReceiveThread(mSocket);
-                        rThread.start();
-                    }
-                });
-                isCon = true;
-                if(outputS != null) dismissProgressDialog();
-                Log.d("BluetoothApp", "Connected to Bluetooth device: " + device.getName());
-            } catch (IOException e) {
-                Log.e("BluetoothApp", "Error connecting to Bluetooth device", e);
-            }
-        }else{
-            Log.e("ConnectToBluetoothDevice" , "ConnectToBluetoothDevice не підтримується");
-        }
     }
 
     private void clearTextViewWithAnimation() {
@@ -347,8 +331,59 @@ public class MainActivity extends AppCompatActivity {
             heaterToggleButton.setChecked(true);
         } else if (lowerCaseCommand.equals("вимкни нагрівач")) {
             heaterToggleButton.setChecked(false);
+
+
+        }else if (lowerCaseCommand.equals("тепло")) {
+            fanToggleButton.setChecked(true);
+            diodeToggleButton.setChecked(false);
+            heaterToggleButton.setChecked(false);
+        }else if (lowerCaseCommand.equals("холодно")) {
+            heaterToggleButton.setChecked(true);
+            fanToggleButton.setChecked(false);
+            diodeToggleButton.setChecked(false);
+        }else if (lowerCaseCommand.equals("темно")) {
+            heaterToggleButton.setChecked(false);
+            fanToggleButton.setChecked(false);
+            diodeToggleButton.setChecked(true);
+
+
+        }else if (lowerCaseCommand.equals("увімкни все")) {
+            heaterToggleButton.setChecked(true);
+            fanToggleButton.setChecked(true);
+            diodeToggleButton.setChecked(true);
+        }else if (lowerCaseCommand.equals("вимкни все")) {
+            heaterToggleButton.setChecked(false);
+            fanToggleButton.setChecked(false);
+            diodeToggleButton.setChecked(false);
         }
     }
+
+    private void connectToBluetoothDevice(String deviceMAC) {
+        if(!deviceMAC.isEmpty()) {
+            BluetoothDevice device = btAdapter.getRemoteDevice(deviceMAC);
+            Log.e("ConnectToBluetoothDevice" , "ConnectToBluetoothDevice підтримується" + deviceMAC);
+            try {
+                mSocket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")); // UUID для з'єднання з Bluetooth пристроєм
+                mSocket.connect();
+                outputS = mSocket.getOutputStream();
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    if (deviceName != null) {
+                        Toast.makeText(this, "Пристрій підключено: " + deviceName, Toast.LENGTH_SHORT).show();
+                        rThread = new ReceiveThread(mSocket);
+                        rThread.start();
+                    }
+                });
+                isCon = true;
+                if(outputS != null) dismissProgressDialog();
+                Log.d("BluetoothApp", "Connected to Bluetooth device: " + device.getName());
+            } catch (IOException e) {
+                Log.e("BluetoothApp", "Error connecting to Bluetooth device", e);
+            }
+        } else {
+            Log.e("ConnectToBluetoothDevice" , "ConnectToBluetoothDevice не підтримується");
+        }
+    }
+
     private void sendData(String data) {
         if (mSocket == null || outputS == null) {
             Toast.makeText(this, "Bluetooth з'єднання не встановлено", Toast.LENGTH_SHORT).show();
@@ -375,7 +410,4 @@ public class MainActivity extends AppCompatActivity {
             progressDialog.dismiss();
         }
     }
-
-
 }
-

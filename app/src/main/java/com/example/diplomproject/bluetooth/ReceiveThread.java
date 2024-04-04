@@ -14,6 +14,7 @@ public class ReceiveThread extends Thread {
     private OutputStream outputS;
 
     private byte[] rBuffer;
+    public String message;
 
     public ReceiveThread(BluetoothSocket socket) {
         this.socket = socket;
@@ -30,7 +31,7 @@ public class ReceiveThread extends Thread {
         while (true){
             try{
                 int size = inputS.read(rBuffer);
-                String message = new String(rBuffer, 0, size);
+                message = new String(rBuffer, 0, size);
                 Log.d("ReceiveThread", "Message: " + message);
 
             } catch (IOException e){
@@ -39,5 +40,7 @@ public class ReceiveThread extends Thread {
         }
     }
 
-
+    public String getMessage() {
+        return message;
+    }
 }
