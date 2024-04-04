@@ -46,18 +46,9 @@ public class ConnectThread extends Thread {
     @SuppressLint("MissingPermission")
     @Override
     public void run() {
-        String deviceName = mDevice.getName();
         btAdapter.cancelDiscovery();
         rThread = new ReceiveThread(mSocket);
         rThread.start();
-        isConnected = true;
-
-
-        Intent intent = new Intent(context, MainActivity.class);
-        intent.putExtra(BtConsts.NAME_KEY, deviceName);
-        intent.putExtra("isConnected", isConnected);
-        intent.putExtra("deviceMAC", mDevice.getAddress());
-        context.startActivity(intent);
     }
 
 

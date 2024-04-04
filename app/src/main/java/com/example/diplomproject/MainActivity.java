@@ -21,6 +21,7 @@ import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -29,7 +30,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.diplomproject.adapter.BtConsts;
-import com.example.diplomproject.bluetooth.BluetoothManager;
 import com.example.diplomproject.bluetooth.BtConnection;
 import com.example.diplomproject.bluetooth.ConnectThread;
 import com.example.diplomproject.bluetooth.ReceiveThread;
@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
                         setTextView(deviceName);
                     }
                 }
-            }, 2000);
+            }, 1000);
         }
 
 
@@ -289,6 +289,8 @@ public class MainActivity extends AppCompatActivity {
                 new Handler(Looper.getMainLooper()).post(() -> {
                     if (deviceName != null) {
                         Toast.makeText(this, "Пристрій підключено: " + deviceName, Toast.LENGTH_SHORT).show();
+                        rThread = new ReceiveThread(mSocket);
+                        rThread.start();
                     }
                 });
                 isCon = true;
@@ -363,7 +365,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void showProgressDialog() {
         progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Connecting...");
+        progressDialog.setMessage("Підключення до пристрою...");
         progressDialog.setCancelable(false);
         progressDialog.show();
     }

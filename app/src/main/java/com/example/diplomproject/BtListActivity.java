@@ -29,10 +29,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.diplomproject.adapter.BtAdapter;
+import com.example.diplomproject.adapter.BtConsts;
 import com.example.diplomproject.adapter.ListItem;
-import com.example.diplomproject.bluetooth.BluetoothManager;
 import com.example.diplomproject.bluetooth.BtConnection;
-import com.example.diplomproject.bluetooth.ConnectThread;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,13 +39,11 @@ import java.util.Set;
 
 public class BtListActivity extends AppCompatActivity {
     private final int BT_REQUEST_PERM = 241;
-    private TextView textView;
     private ArrayList<String> xmlDataList;
     private ListView listView;
     private BtAdapter adapter;
     private BluetoothAdapter btAdapter;
     private List<ListItem> list;
-    private ConnectThread connectThread;
     private BluetoothAdapter bluetoothAdapter;
     private ArrayAdapter<String> deviceArrayAdapter;
     private ArrayList<BluetoothDevice> deviceList;
@@ -56,39 +53,29 @@ public class BtListActivity extends AppCompatActivity {
     private ListView deviceListView;
     private BtConnection btConnection;
     private boolean isBtPermissionGranted = false;
+    private TextView textView;
 
-
+    private boolean exitCon = false;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.bluetooth_activity);
-
-        // Ініціалізація текстового поля інші елементи, що ініціалізуються
-        textView = findViewById(R.id.textView);
+        btConnection = new BtConnection(this , textView);
         init();
-        con();
         getBtPermission();
         checkHome();
-
-
-        // Ініціалізація btConnection
-        btConnection = new BtConnection(this, textView);
-        Log.e("BtListActivity", "btConnection" + btConnection);
-
+        con();
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
         if (item.getItemId() == android.R.id.home) {
             finish();
         }
-
         return super.onOptionsItemSelected(item);
     }
 
     private void init() {
-
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         list = new ArrayList<>();
         listView = findViewById(R.id.deviceListView);
@@ -97,28 +84,22 @@ public class BtListActivity extends AppCompatActivity {
         search();
         getPairedDevices();
         onItemClickListener();
-
     }
 
     private void onItemClickListener() {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @SuppressLint("MissingPermission")
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 ListItem item = (ListItem) parent.getItemAtPosition(position);
                 if (item.getItemType().equals(BtAdapter.DISCOVERY_ITEM_TYPE)) {
-                    BluetoothDevice device = item.getBtDevice();
-
-                    ConnectThread connectThread = new ConnectThread(context, btAdapter, device, textView);
-                    BluetoothManager.getInstance().setConnectThread(connectThread);
-                    connectThread.start();
+                    item.getBtDevice().createBond();
                 } else {
-
+                    // If the click was on bt_list_item_title, do nothing
                 }
             }
         });
     }
-
-
 
     private void checkHome() {
         btHome = findViewById(R.id.btHome);
@@ -151,7 +132,6 @@ public class BtListActivity extends AppCompatActivity {
 
     private void search() {
         Button searchButton = findViewById(R.id.searchButton);
-
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -168,56 +148,35 @@ public class BtListActivity extends AppCompatActivity {
 
     private void con() {
         Button btCon = findViewById(R.id.btCon);
-
         btCon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btConnection.connect();
-                if(btConnection != null){
-                    Log.d("btConnection", "Connectd" + btConnection);
-                }else {
-                    Log.d("btConnection", "NotConnectd" + btConnection);
-                }
             }
         });
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-
         if (requestCode == BT_REQUEST_PERM) {
-
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
                 isBtPermissionGranted = true;
                 Toast.makeText(this, "Дозвіл отримано!", Toast.LENGTH_SHORT).show();
-
             } else {
-
                 Toast.makeText(this, "Ви не недали дозволу на використання геолокації.", Toast.LENGTH_SHORT).show();
-
             }
-
         } else {
-
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
         }
-
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private void getBtPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, BT_REQUEST_PERM);
-
         } else {
-
             isBtPermissionGranted = true;
-
         }
-
     }
 
     @Override
@@ -236,10 +195,12 @@ public class BtListActivity extends AppCompatActivity {
         unregisterReceiver(bReciver);
     }
 
+
     private final BroadcastReceiver bReciver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (BluetoothDevice.ACTION_FOUND.equals(intent.getAction())) {
+            String action = intent.getAction();
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 if (device.getName() != null && !device.getName().isEmpty()) {
                     boolean isDeviceExist = false;
@@ -249,7 +210,7 @@ public class BtListActivity extends AppCompatActivity {
                             break;
                         }
                     }
-                    // Если устройство не существует в списке, добавляем его
+
                     if (!isDeviceExist) {
                         Log.d("MyLog", "MacAdress maybe of bluetooth: " + device.getAddress());
                         ListItem item = new ListItem();
@@ -257,8 +218,20 @@ public class BtListActivity extends AppCompatActivity {
                         item.setItemType(BtAdapter.DISCOVERY_ITEM_TYPE);
                         list.add(item);
                         adapter.notifyDataSetChanged();
+
+                    }
+                    if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
+                        int bondState = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
+                        if (bondState == BluetoothDevice.BOND_BONDED) {
+                            exitCon = true;
+                            if (exitCon) {
+                                intent = new Intent(BtListActivity.this, MainActivity.class);
+                                startActivity(intent);
+                            }
+                        }
                     }
                 }
+
             }
         }
     };

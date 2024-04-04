@@ -24,15 +24,15 @@ public class ReceiveThread extends Thread {
         }
 
     }
-
     @Override
     public void run() {
-        rBuffer = new byte[1024];
+        rBuffer = new byte[2048];
         while (true){
             try{
                 int size = inputS.read(rBuffer);
                 String message = new String(rBuffer, 0, size);
                 Log.d("ReceiveThread", "Message: " + message);
+
             } catch (IOException e){
                 break;
             }
