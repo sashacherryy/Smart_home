@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private Handler handler = new Handler();
     private EditText timeoutEditText;
     private Button confirmButton, buttonA , connectBlueButton;
-    private TextView textView, deviceInfo1, deviceInfo2;
+    private TextView textView, deviceInfo1, deviceInfo2 , humView , tempView, textView2;
     private ReceiveThread rThread;
     private String deviceMAC;
     private OutputStream outputS;
@@ -83,8 +83,11 @@ public class MainActivity extends AppCompatActivity {
 
         timeoutEditText = findViewById(R.id.timeout);
         confirmButton = findViewById(R.id.confirmButton);
+        tempView = findViewById(R.id.tempView);
+        humView = findViewById(R.id.humView);
         deviceInfo1 = findViewById(R.id.deviceInfo1);
         deviceInfo2 = findViewById(R.id.deviceInfo2);
+        textView2 =findViewById(R.id.textView2);
 
         checkBlue();
         init();
@@ -109,6 +112,10 @@ public class MainActivity extends AppCompatActivity {
                     if (progressDialog != null && progressDialog.isShowing()) {
                         connectToBluetoothDevice(deviceMAC);
                         setTextView(deviceName);
+                        textView2.setText("");
+                        tempView.setText("Температура:");
+                        humView.setText("Вологість:");
+
                     }
                 }
             }, 1000);
@@ -116,11 +123,11 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     updateTextView();
-                    handler.postDelayed(this, 10);
+                    handler.postDelayed(this, 100);
                 }
             };
             updateTextView();
-            handler.postDelayed(updateTextViewRunnable, 10);
+            handler.postDelayed(updateTextViewRunnable, 100);
         }
     }
 
@@ -273,10 +280,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateTextView(){
-        if ( rThread != null && rThread.getMessage() != null && rThread.getMessage().contains("T")&& !rThread.getMessage().contains("H")) {
+        if ( rThread != null && rThread.getMessage() != null && rThread.getMessage().contains("°C")&& !rThread.getMessage().contains("%") && rThread.getMessage().endsWith("°C") && !rThread.getMessage().startsWith(".")) {
             deviceInfo1.setText(rThread.getMessage());
         }
-        if ( rThread != null && rThread.getMessage() != null && rThread.getMessage().contains("H")&& !rThread.getMessage().contains("T")) {
+        if ( rThread != null && rThread.getMessage() != null && rThread.getMessage().contains("%")&& !rThread.getMessage().contains("°C") && rThread.getMessage().endsWith("%") && !rThread.getMessage().startsWith(".")) {
             deviceInfo2.setText(rThread.getMessage());
         }
     }
