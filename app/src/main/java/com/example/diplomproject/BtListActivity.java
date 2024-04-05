@@ -95,7 +95,7 @@ public class BtListActivity extends AppCompatActivity {
                 if (item.getItemType().equals(BtAdapter.DISCOVERY_ITEM_TYPE)) {
                     item.getBtDevice().createBond();
                 } else {
-                    // If the click was on bt_list_item_title, do nothing
+
                 }
             }
         });
@@ -133,6 +133,7 @@ public class BtListActivity extends AppCompatActivity {
     private void search() {
         Button searchButton = findViewById(R.id.searchButton);
         searchButton.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("MissingPermission")
             @Override
             public void onClick(View v) {
                 if (listView.getHeaderViewsCount() == 0) {
@@ -197,6 +198,7 @@ public class BtListActivity extends AppCompatActivity {
 
 
     private final BroadcastReceiver bReciver = new BroadcastReceiver() {
+        @SuppressLint("MissingPermission")
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();

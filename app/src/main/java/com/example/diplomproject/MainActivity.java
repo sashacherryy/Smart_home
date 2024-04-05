@@ -365,12 +365,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("MissingPermission")
     private void connectToBluetoothDevice(String deviceMAC) {
         if(!deviceMAC.isEmpty()) {
             BluetoothDevice device = btAdapter.getRemoteDevice(deviceMAC);
             Log.e("ConnectToBluetoothDevice" , "ConnectToBluetoothDevice підтримується" + deviceMAC);
             try {
-                mSocket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")); // UUID для з'єднання з Bluetooth пристроєм
+                mSocket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
                 mSocket.connect();
                 outputS = mSocket.getOutputStream();
                 new Handler(Looper.getMainLooper()).post(() -> {
